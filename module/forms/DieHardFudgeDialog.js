@@ -1,12 +1,8 @@
-export default class DieHardFudgeDialog extends FormApplication {
+import DieHardDialog from "./DieHardDialog.js";
+
+export default class DieHardFudgeDialog extends DieHardDialog {
 	static get defaultOptions() {
-		return mergeObject(super.defaultOptions, {
-			classes: ["form"],
-			closeOnSubmit: false,
-			submitOnChange: false,
-			submitOnClose: true,
-			popOut: true,
-			editable: game.user.isGM,
+		return foundry.utils.mergeObject(super.defaultOptions, {
 			width: 1000,
 			template: "modules/foundry-die-hard/templates/die-hard-fudge-config.hbs",
 			id: "die-hard-fudge-config",
@@ -18,35 +14,20 @@ export default class DieHardFudgeDialog extends FormApplication {
 		super();
 		this.operator = null;
 		this.operatorValue = null;
-		Hooks.once("closeApplication", (app, html) => {
-			if (app.id === "die-hard-fudge-config") {
-				game.dieHardSystem.refreshActiveFudgesIcon();
-			}
-		});
 	}
 
 	async getData() {
-		let activeFudges = [];
-		let allFudges = game.dieHardSystem.getAllFudges();
-		for (let fudgeType in allFudges) {
-			for (let typeObject in allFudges[fudgeType]) {
-				try {
-					if (allFudges[fudgeType][typeObject].fudges.length > 0) {
-						activeFudges = activeFudges.concat(allFudges[fudgeType][typeObject].fudges);
-					}
-				} catch (e) {}
-			}
-		}
+		const activeFudges = Object.values(game.dieHard.allFudges).flatMap((fudgeArray) =>
+			fudgeArray.flatMap((typeObject) => typeObject.fudges)
+		);
 
-		let dialogData = {
-			whoGmOptions: game.dieHardSystem.getFudgeWhoGmOptions(),
-			whoUserOptions: game.dieHardSystem.getFudgeWhoUserOptions(),
-			//whoActorOptions: game.dieHardSystem.getFudgeWhoActorOptions(),
-			whatOptions: game.dieHardSystem.getFudgeWhatOptions(),
+		return {
+			whoGmOptions: game.dieHard.getUsers(true, false, true),
+			whoUserOptions: game.dieHard.getUsers(),
+			//whoActorOptions: game.dieHard.getFudgeWhoActorOptions(),
+			whatOptions: game.dieHard.fudgeWhatOptions,
 			activeFudges: activeFudges,
 		};
-
-		return dialogData;
 	}
 
 	_uuidV4() {
@@ -225,25 +206,19 @@ export default class DieHardFudgeDialog extends FormApplication {
 
 			this.close();
 		} else if (event.submitter?.name === "create") {
-			//Ugly hack for v10
-			let formWho;
-			if (isNewerVersion(game.version, 9.9999)) {
-				let whoOptions = ["hidden"];
-				for (const gm of game.dieHardSystem.getFudgeWhoGmOptions()) {
-					whoOptions.push(gm.id);
-				}
-				for (const player of game.dieHardSystem.getFudgeWhoUserOptions()) {
-					whoOptions.push(player.id);
-				}
-				formWho = [];
+			let whoOptions = ["hidden"];
+			for (const gm of game.dieHard.getUsers(true, false, true)) {
+				whoOptions.push(gm.id);
+			}
+			for (const player of game.dieHard.getUsers()) {
+				whoOptions.push(player.id);
+			}
+			let formWho = [];
 
-				for (let index = 0; index < formData.fudgeWho.length; index++) {
-					if (formData.fudgeWho[index]) {
-						formWho.push(whoOptions[index]);
-					}
+			for (let index = 0; index < formData.fudgeWho.length; index++) {
+				if (formData.fudgeWho[index]) {
+					formWho.push(whoOptions[index]);
 				}
-			} else {
-				formWho = formData.fudgeWho;
 			}
 
 			//for (let whoIndex = 0; whoIndex < formData.fudgeWho.length; whoIndex++) {
@@ -260,17 +235,13 @@ export default class DieHardFudgeDialog extends FormApplication {
 				}
 				let whatOption = {};
 				if (formData.fudgeWhat.slice(0, 3) === "raw") {
-					whatOption = game.dieHardSystem
-						.getFudgeWhatRawOptions()
-						.find((element) => element.id === formData.fudgeWhat);
+					whatOption = game.dieHard.fudgeWhatRawOptions.find((element) => element.id === formData.fudgeWhat);
 				} else if (formData.fudgeWhat.slice(0, 5) === "total") {
-					whatOption = game.dieHardSystem
-						.getFudgeWhatTotalOptions()
-						.find((element) => element.id === formData.fudgeWhat);
+					whatOption = game.dieHard.fudgeWhatTotalOptions.find(
+						(element) => element.id === formData.fudgeWhat
+					);
 				} else {
-					whatOption = game.dieHardSystem
-						.getFudgeWhatOptions()
-						.find((element) => element.id === formData.fudgeWhat);
+					whatOption = game.dieHard.fudgeWhatOptions.find((element) => element.id === formData.fudgeWhat);
 				}
 
 				let fudgeTimes = 1;

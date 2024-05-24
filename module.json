@@ -1,40 +1,36 @@
 {
-    "id": "foundry-die-hard",
-    "title": "Die Hard",
-    "description": "Adjustments for DND5e & PF2e die rolls like fudging...",
-    "author": "Jeremy (UranusBytes)",
-    "version": "0.1.1",
-    "esmodules": [
-        "scripts/die-hard.js"
-    ],
-    "styles": [
-        "styles/die-hard.css"
-    ],
-    "dependencies": [
-        {
-            "name": "lib-wrapper",
-            "type": "module"
-        }
-    ],
-    "languages": [
-        {
-            "lang": "en",
-            "name": "English",
-            "path": "lang/en.json"
-        }
-    ],
-    "flags": {
-        "fvttdevleague": {
-            "package-jam": 2022
-        }
-    },
-    "compatibility": {
-		"minimum": 10,
-		"verified": "10.291"
+	"id": "foundry-die-hard",
+	"title": "Die Hard",
+	"description": "Adjustments for DND5e & PF2e die rolls like fudging...",
+	"authors": [
+		{
+			"name": "Matheus Clemente",
+			"discord": "mclemente"
+		}
+	],
+	"esmodules": ["module/die-hard.js"],
+	"styles": ["styles/die-hard.css"],
+	"relationships": {
+		"requires": [
+			{
+				"id": "lib-wrapper",
+				"type": "module"
+			}
+		]
 	},
-    "url": "https://github.com/UranusBytes/foundry-die-hard",
-    "manifest": "https://github.com/UranusBytes/foundry-die-hard/releases/latest/download/module.json",
-    "readme": "https://github.com/UranusBytes/foundry-die-hard/blob/main/README.md",
-    "changelog": "https://github.com/UranusBytes/foundry-die-hard/blob/main/CHANGELOG.md",
-    "download": "https://github.com/UranusBytes/foundry-die-hard/releases/download/0.1.1/module.zip"
+	"languages": [
+		{
+			"lang": "en",
+			"name": "English",
+			"path": "lang/en.json"
+		}
+	],
+	"compatibility": {
+		"minimum": 11,
+		"verified": 11
+	},
+	"url": "This is auto replaced",
+	"version": "This is auto replaced",
+	"manifest": "This is auto replaced",
+	"download": "This is auto replaced"
 }
