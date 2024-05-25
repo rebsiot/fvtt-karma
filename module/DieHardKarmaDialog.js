@@ -1,4 +1,4 @@
-export default class DieHardKarmaDialog extends FormApplication {
+export class DieHardKarmaApp extends FormApplication {
 	static get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {
 			closeOnSubmit: false,

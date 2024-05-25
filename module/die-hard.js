@@ -1,4 +1,4 @@
-import DieHardKarmaDialog from "./DieHardKarmaDialog.js";
+import { DieHardKarmaApp } from "./DieHardKarmaDialog.js";
 import { KarmaSettings } from "./KarmaData.js";
 
 Hooks.once("init", () => {
@@ -8,7 +8,7 @@ Hooks.once("init", () => {
 		label: "Karma",
 		hint: "",
 		icon: "fas fa-praying-hands",
-		type: DieHardKarmaDialog,
+		type: DieHardKarmaApp,
 		restricted: true,
 	});
 
@@ -36,7 +36,7 @@ Hooks.on("renderChatLog", (app, html) => {
 	karmaButton.classList.add("die-hard-karma-icon");
 	karmaButton.innerHTML =
 		'<a data-tooltip="Karma" role="button"><i id="die-hard-karma-icon" class="fas fa-praying-hands"></i></a>';
-	karmaButton.addEventListener("click", (ev) => new DieHardKarmaDialog().render(true));
+	karmaButton.addEventListener("click", (ev) => new DieHardKarmaApp().render(true));
 
 	html.find(".chat-control-icon").after(karmaButton);
 	refreshDieHardIcons();
