@@ -1,13 +1,10 @@
-import DieHardDialog from "./DieHardDialog.js";
-
-export default class DieHardKarmaDialog extends DieHardDialog {
-	constructor(object = {}, options = {}) {
-		super(object, options);
-	}
-
+export default class DieHardKarmaDialog extends FormApplication {
 	static get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {
+			closeOnSubmit: false,
 			submitOnChange: true,
+			submitOnClose: true,
+			editable: game.user.isGM,
 			width: 500,
 			height: "auto",
 			template: "modules/foundry-die-hard/templates/die-hard-karma-config.hbs",
@@ -24,9 +21,23 @@ export default class DieHardKarmaDialog extends DieHardDialog {
 				average: "Average",
 			},
 			playerStats: this.getkarmaPlayerStats(),
-			whoGmOptions: game.dieHard.getUsers({ activeOnly: true, getGM: true }),
-			whoUserOptions: game.dieHard.getUsers(),
+			whoGmOptions: this.constructor.getUsers({ activeOnly: true, getGM: true }),
+			whoUserOptions: this.constructor.getUsers(),
 		};
+	}
+
+	/**
+	 *Return an array of all users (map of id and name), defaulting to ones currently active
+	 */
+	static getUsers({ activeOnly = false, getGM = false } = {}) {
+		const karmaUsers = game.settings.get("foundry-die-hard", "karma").users;
+		return game.users
+			.filter((user) => getGM === user.isGM && (!activeOnly || user.active))
+			.map((user) => ({
+				id: user.id,
+				name: user.name,
+				karma: karmaUsers.includes(user.id),
+			}));
 	}
 
 	getkarmaPlayerStats() {
