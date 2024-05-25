@@ -110,12 +110,12 @@ export default class DieHardDnd5e extends DieHardTemplate {
 				evalResult = this.evalFudge(new_roll.total, fudgeOperator, fudgeOperatorValue);
 				if (evalResult) {
 					gen_new_result = false;
-					foundry.utils.foundry.utils.mergeObject(result, new_roll);
+					foundry.utils.mergeObject(result, new_roll);
 					DieHardTemplate.dmToGm(dmMessage);
 				} else {
 					// New roll is insufficient, but lets at least check if it is "closer"
 					if (this.isBetterFudge(result.total, new_roll.total, fudgeOperator, fudgeOperatorValue)) {
-						foundry.utils.foundry.utils.mergeObject(result, new_roll);
+						foundry.utils.mergeObject(result, new_roll);
 					}
 					dmMessage += "," + new_roll.total;
 				}
@@ -159,9 +159,9 @@ export default class DieHardDnd5e extends DieHardTemplate {
 			!game.settings.get("foundry-die-hard", "globalDisable")
 		) {
 			// Check if user has an active fudge
-			let userFudge = this.getUserFudge(rollType);
+			const userFudge = this.getUserFudge(rollType);
 			if (userFudge !== null) {
-				foundry.utils.foundry.utils.mergeObject(options, {
+				foundry.utils.mergeObject(options, {
 					data: {
 						fudge: true,
 						fudgeOperator: userFudge.operator,

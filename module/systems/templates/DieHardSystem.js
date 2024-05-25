@@ -1,3 +1,6 @@
+import { KarmaSettings } from "../../data/karma.js";
+import DieHardKarmaDialog from "../../forms/DieHardKarmaDialog.js";
+
 export default class DieHardTemplate {
 	constructor() {
 		// Total rolls
@@ -87,8 +90,8 @@ export default class DieHardTemplate {
 	 */
 	get allFudges() {
 		return {
-			userFudges: this.getUsers(false, true),
-			gmFudges: this.getUsers(false, true, true),
+			userFudges: this.getUsers({ includeFudges: true }),
+			gmFudges: this.getUsers({ includeFudges: true, getGM: true }),
 		};
 	}
 
@@ -97,8 +100,8 @@ export default class DieHardTemplate {
 	 */
 	get activeFudges() {
 		const allFudges = this.allFudges;
-		for (let fudgeType in allFudges) {
-			for (let fudgeSource of allFudges[fudgeType]) {
+		for (const fudgeType in allFudges) {
+			for (const fudgeSource of allFudges[fudgeType]) {
 				if (fudgeSource?.fudges?.some((element) => element.statusActive)) {
 					return true;
 				}
@@ -111,9 +114,7 @@ export default class DieHardTemplate {
 	 * Return true if there are any active Karma
 	 */
 	get activeKarma() {
-		const avgKarmaSettings = game.settings.get("foundry-die-hard", "avgKarmaSettings");
-		const simpleKarmaSettings = game.settings.get("foundry-die-hard", "simpleKarmaSettings");
-		return avgKarmaSettings.enabled || simpleKarmaSettings.enabled;
+		return game.settings.get("foundry-die-hard", "karma").enabled;
 	}
 
 	evalFudge(result, operator, operatorValue) {
@@ -151,25 +152,14 @@ export default class DieHardTemplate {
 	}
 
 	getUserFudge(fudgeType) {
-		let userFudges = game.users.current.getFlag("foundry-die-hard", "fudges");
-
-		if (!Array.isArray(userFudges)) {
-			return null;
-		}
-		let fudgeIndex = userFudges.findIndex((element) => {
-			return element.whatId === fudgeType && element.statusActive;
-		});
-
-		if (fudgeIndex !== -1) {
-			return userFudges[fudgeIndex];
-		} else {
-			return null;
-		}
+		const userFudges = game.user.getFlag("foundry-die-hard", "fudges") ?? [];
+		const fudgeIndex = userFudges.findIndex((element) => element.whatId === fudgeType && element.statusActive);
+		return userFudges[fudgeIndex];
 	}
 
 	disableUserFudge(fudgeId) {
-		let userFudges = game.users.current.getFlag("foundry-die-hard", "fudges");
-		let fudgeIndex = userFudges.findIndex((element) => {
+		const userFudges = game.users.current.getFlag("foundry-die-hard", "fudges");
+		const fudgeIndex = userFudges.findIndex((element) => {
 			return element.id === fudgeId;
 		});
 		userFudges[fudgeIndex].statusActive = false;
@@ -246,114 +236,75 @@ export default class DieHardTemplate {
 			}
 		}
 
-		if (game.settings.get("foundry-die-hard", "karmaEnabled") && this.faces === 20) {
-			const simpleKarmaSettings = game.settings.get("foundry-die-hard", "simpleKarmaSettings");
-			const avgKarmaSettings = game.settings.get("foundry-die-hard", "avgKarmaSettings");
-			const who = game.settings.get("foundry-die-hard", "karmaWho");
-			if (
-				(who.length === 0 || who.includes(game.user.id)) &&
-				(simpleKarmaSettings.enabled || avgKarmaSettings.enabled)
-			) {
-				// Make the initial roll
-				const roll = { result: undefined, active: true };
-				// This is copied from resources/app/client/dice/terms/dice.js - rolls method
-				if (options.minimize) roll.result = Math.min(1, this.faces);
-				else if (options.maximize) roll.result = this.faces;
-				else roll.result = Math.ceil(CONFIG.Dice.randomUniform() * this.faces);
+		const karma = game.settings.get("foundry-die-hard", "karma");
+		const roll = wrapped(options);
+		if (karma.enabled && this.faces === karma.dice) {
+			if (!karma.users.length || karma.users.includes(game.user.id)) {
+				const userKarma = game.user.getFlag("foundry-die-hard", "karma") ?? {
+					history: [],
+					cumulative: 0,
+				};
+				const history = userKarma.history;
+				history.push(roll.result);
+				while (history.length > karma.history) {
+					history.shift();
+				}
 
-				if (simpleKarmaSettings.enabled) {
-					let simpleKarmaData = game.users.current.getFlag("foundry-die-hard", "simpleKarma");
-					if (!Array.isArray(simpleKarmaData)) {
-						simpleKarmaData = [];
-					}
-					simpleKarmaData.push(roll.result);
+				if (karma.type === "simple") {
+					const tempResult = history.findIndex((element) => element > karma.threshold);
 
-					while (simpleKarmaData.length > simpleKarmaSettings.history) {
-						simpleKarmaData.shift();
-					}
-
-					let tempResult = simpleKarmaData.findIndex((element) => {
-						return element > simpleKarmaSettings.threshold;
-					});
-
-					if (simpleKarmaData.length === simpleKarmaSettings.history && tempResult === -1) {
+					if (history.length === karma.history && tempResult === -1) {
 						let originalResult = roll.result;
-						while (roll.result < simpleKarmaSettings.floor) {
+						while (roll.result < karma.floor) {
 							// This is copied from resources/app/client/dice/terms/dice.js - rolls method
 							if (options.minimize) roll.result = Math.min(1, this.faces);
 							else if (options.maximize) roll.result = this.faces;
 							else roll.result = Math.ceil(CONFIG.Dice.randomUniform() * this.faces);
 						}
 
-						simpleKarmaData.push(roll.result);
-						while (simpleKarmaData.length > simpleKarmaSettings.history) {
-							simpleKarmaData.shift();
+						history.push(roll.result);
+						while (history.length > karma.history) {
+							history.shift();
 						}
-						DieHardTemplate.dmToGm(
-							"DieHard-Karma: Simple Karma for " +
-								game.users.current.name +
-								" adjusted a roll of " +
-								originalResult +
-								" to a " +
-								roll.result
-						);
+						if (karma.chat !== "none") {
+							this.options.dieHard = {
+								karma: `Adjusted ${originalResult} to a ${roll.result}.`,
+							};
+						}
 					}
-					game.users.current.setFlag("foundry-die-hard", "simpleKarma", simpleKarmaData);
-				} else if (avgKarmaSettings.enabled) {
-					let avgKarmaData = game.users.current.getFlag("foundry-die-hard", "avgKarmaData");
+					game.user.setFlag("foundry-die-hard", "karma", userKarma);
+				} else if (karma.type === "average") {
+					const tempResult = history.reduce((a, b) => a + b, 0) / history.length;
 
-					if (avgKarmaData === undefined) {
-						avgKarmaData = {
-							history: [],
-							cumulative: 0,
-						};
-					}
-					avgKarmaData.history.push(roll.result);
-					while (avgKarmaData.history.length > avgKarmaSettings.history) {
-						avgKarmaData.history.shift();
-					}
-
-					let tempResult = avgKarmaData.history.reduce((a, b) => a + b, 0) / avgKarmaData.history.length;
-
-					if (
-						avgKarmaData.history.length === avgKarmaSettings.history &&
-						tempResult <= avgKarmaSettings.threshold
-					) {
+					if (history.length === karma.history && tempResult <= karma.threshold) {
 						let originalResult = roll.result;
-						if (avgKarmaSettings.cumulative) {
-							avgKarmaData.cumulative += 1;
-						} else {
-							avgKarmaData.cumulative = 1;
-						}
-						roll.result += avgKarmaData.cumulative * avgKarmaSettings.nudge;
+						if (karma.cumulative) userKarma.cumulative += 1;
+						else userKarma.cumulative = 1;
+
+						roll.result += userKarma.cumulative * karma.nudge;
 
 						// Max at num faces
 						if (roll.result > this.faces) {
 							roll.result = this.faces;
 						}
 
-						avgKarmaData.history.push(roll.result);
-						while (avgKarmaData.history.length > avgKarmaData.history.history) {
-							avgKarmaData.history.shift();
+						history.push(roll.result);
+						while (history.length > history.history) {
+							history.shift();
 						}
-						DieHardTemplate.dmToGm(
-							"DieHard-Karma: Avg Karma for " +
-								game.users.current.name +
-								" adjusted a roll of " +
-								originalResult +
-								" to a " +
-								roll.result
-						);
-					} else {
-						avgKarmaData.cumulative = 0;
-					}
-					game.users.current.setFlag("foundry-die-hard", "avgKarmaData", avgKarmaData);
+						if (karma.chat !== "none") {
+							this.options.dieHard = {
+								karma: `Averaged ${originalResult} to a ${roll.result}.`,
+							};
+						}
+					} else userKarma.cumulative = 0;
+
+					game.user.setFlag("foundry-die-hard", "karma", userKarma);
 				}
-				this.results.push(roll);
-				return roll;
+				this.results[this.results.length - 1] = roll;
 			}
 		}
-		return wrapped(options);
+		return roll;
 	}
 
 	/**
@@ -376,7 +327,7 @@ export default class DieHardTemplate {
 
 					let userFudge = game.dieHard.getUserFudge("totald" + this.dice[die].faces);
 					if (userFudge !== null) {
-						foundry.utils.foundry.utils.mergeObject(this, {
+						foundry.utils.mergeObject(this, {
 							data: {
 								fudge: true,
 								fudgeOperator: userFudge.operator,
@@ -428,7 +379,7 @@ export default class DieHardTemplate {
 								);
 								if (evalResult) {
 									gen_new_result = false;
-									foundry.utils.foundry.utils.mergeObject(this, new_roll, { recursive: false });
+									foundry.utils.mergeObject(this, new_roll, { recursive: false });
 									DieHardTemplate.dmToGm(
 										"Total Fudge (" +
 											result.data.fudgeHow +
@@ -447,7 +398,7 @@ export default class DieHardTemplate {
 											this.data.fudgeOperatorValue
 										)
 									) {
-										foundry.utils.foundry.utils.mergeObject(this, new_roll, { recursive: false });
+										foundry.utils.mergeObject(this, new_roll, { recursive: false });
 									}
 									failedRolls.push(new_roll.total);
 								}
@@ -471,27 +422,22 @@ export default class DieHardTemplate {
 	/**
 	 *Return an array of all users (map of id and name), defaulting to ones currently active
 	 */
-	getUsers(activeOnly = false, includeFudges = false, getGM = false) {
-		const who = game.settings.get("foundry-die-hard", "karmaWho");
-		return [...game.users.values()]
-			.filter((user) => {
-				const isGM = user.isGM;
-				return (!getGM && !isGM) || (getGM && isGM);
-			})
-			.filter((user) => !activeOnly || user.active)
-			.map((user) => {
-				const newUser = { id: user.id, name: user.name, karma: who.includes(user.id) };
-				if (includeFudges) {
-					newUser.fudges = user.getFlag("foundry-die-hard", "fudges") || [];
-				}
-				return newUser;
-			});
+	getUsers({ activeOnly = false, includeFudges = false, getGM = false } = {}) {
+		const who = game.settings.get("foundry-die-hard", "karma").users;
+		return game.users
+			.filter((user) => getGM === user.isGM && (!activeOnly || user.active))
+			.map((user) => ({
+				id: user.id,
+				name: user.name,
+				karma: who.includes(user.id),
+				...(includeFudges && { fudges: user.getFlag("foundry-die-hard", "fudges") || [] }),
+			}));
 	}
 
 	// game.dieHard.deleteAllFudges()
 	deleteAllFudges() {
 		// Players
-		let users = game.dieHard.getUsers(false);
+		let users = game.dieHard.getUsers();
 		for (let user in users) {
 			try {
 				game.user.get(users[user].id).setFlag("foundry-die-hard", "fudges", null);
@@ -501,7 +447,7 @@ export default class DieHardTemplate {
 		}
 
 		// Players
-		let gms = game.dieHard.getUsers(false, false, true);
+		let gms = game.dieHard.getUsers({ getGM: true });
 		for (let user in gms) {
 			try {
 				game.user.get(users[user].id).setFlag("foundry-die-hard", "fudges", null);
@@ -545,7 +491,7 @@ export default class DieHardTemplate {
 		}
 
 		const karmaIcon = document.getElementById("die-hard-karma-icon");
-		if (game.settings.get("foundry-die-hard", "karmaEnabled")) {
+		if (game.settings.get("foundry-die-hard", "karma").enabled) {
 			karmaIcon?.classList.remove("die-hard-icon-hidden");
 			karmaIcon?.classList.toggle("die-hard-icon-active", game.dieHard.activeKarma);
 		} else {
@@ -554,15 +500,13 @@ export default class DieHardTemplate {
 	}
 
 	static registerSettings() {
-		// Enables karma
-		game.settings.register("foundry-die-hard", "karmaEnabled", {
-			name: "Enable Karma",
+		game.settings.registerMenu("foundry-die-hard", "KarmaDialog", {
+			name: "Karma",
+			label: "Karma",
 			hint: "",
-			scope: "world",
-			config: true,
-			default: true,
-			type: Boolean,
-			onChange: (value) => DieHardTemplate.refreshDieHardIcons(!value),
+			icon: "fas fa-praying-hands",
+			type: DieHardKarmaDialog,
+			restricted: true,
 		});
 
 		// Enables fudge
@@ -585,42 +529,20 @@ export default class DieHardTemplate {
 		});
 
 		// Simple Karma
-		game.settings.register("foundry-die-hard", "simpleKarmaSettings", {
-			name: "Simple Karma Settings",
+		game.settings.register("foundry-die-hard", "karma", {
+			name: "Karma",
 			hint: "Simple Karma Settings",
 			scope: "world",
 			config: false,
+			type: KarmaSettings,
 			default: {
 				enabled: false,
 				history: 2,
 				threshold: 7,
 				floor: 13,
-			},
-			type: Object,
-		});
-
-		// Average Karma
-		game.settings.register("foundry-die-hard", "avgKarmaSettings", {
-			name: "Average Karma Settings",
-			hint: "Average Karma Settings",
-			scope: "world",
-			config: false,
-			default: {
-				enabled: false,
-				history: 3,
-				threshold: 7,
 				nudge: 5,
 				cumulative: false,
 			},
-			type: Object,
-		});
-
-		// Karma Who
-		game.settings.register("foundry-die-hard", "karmaWho", {
-			scope: "world",
-			config: false,
-			default: [],
-			type: Array,
 		});
 	}
 }

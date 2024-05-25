@@ -18,11 +18,8 @@ export default class DieHard {
 		}
 
 		const karmaIcon = document.getElementById("die-hard-karma-icon");
-		if (game.settings.get("foundry-die-hard", "karmaEnabled")) {
-			karmaIcon?.classList.remove("die-hard-icon-hidden");
-			karmaIcon?.classList.toggle("die-hard-icon-active", game.dieHard.activeKarma);
-		} else {
-			karmaIcon?.classList.add("die-hard-icon-hidden");
-		}
+		const karmaEnabled = game.settings.get("foundry-die-hard", "karma").enabled;
+		karmaIcon?.classList.toggle("die-hard-icon-hidden", !karmaEnabled);
+		karmaIcon?.classList.toggle("die-hard-icon-active", karmaEnabled);
 	}
 }

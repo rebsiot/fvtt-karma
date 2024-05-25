@@ -97,16 +97,7 @@ input.die-hard-radio + label {
 input.die-hard-radio:checked + label {
 	background: rgba(0, 0, 0, 0.5);
 	color: var(--color-text-light-highlight);
-	cursor: pointer !important;
-}
-
-div.die-hard-form-group {
-	clear: both;
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	margin: 3px 0;
-	align-items: center;
+	cursor: pointer;
 }
 
 .die-hard-colum-input-times {

@@ -22,9 +22,8 @@ export default class DieHardFudgeDialog extends DieHardDialog {
 		);
 
 		return {
-			whoGmOptions: game.dieHard.getUsers(true, false, true),
+			whoGmOptions: game.dieHard.getUsers({ activeOnly: true, getGM: true }),
 			whoUserOptions: game.dieHard.getUsers(),
-			//whoActorOptions: game.dieHard.getFudgeWhoActorOptions(),
 			whatOptions: game.dieHard.fudgeWhatOptions,
 			activeFudges: activeFudges,
 		};
@@ -207,7 +206,7 @@ export default class DieHardFudgeDialog extends DieHardDialog {
 			this.close();
 		} else if (event.submitter?.name === "create") {
 			let whoOptions = ["hidden"];
-			for (const gm of game.dieHard.getUsers(true, false, true)) {
+			for (const gm of game.dieHard.getUsers({ activeOnly: true, getGM: true })) {
 				whoOptions.push(gm.id);
 			}
 			for (const player of game.dieHard.getUsers()) {

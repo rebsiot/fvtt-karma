@@ -36,3 +36,21 @@ Hooks.on("renderChatLog", (app, html) => {
 	html.find(".chat-control-icon").after(karmaButton);
 	DieHardTemplate.refreshDieHardIcons();
 });
+
+Hooks.on("renderChatMessage", (message, html, data) => {
+	if (!game.user.isGM || !message.rolls?.length) return;
+	const terms = message.rolls.find((r) => r.terms.find((t) => t.options.dieHard))?.terms;
+	if (terms) {
+		const dieHardOptions = terms.find((t) => t.options.dieHard).options.dieHard;
+		const metadata = html.find(".message-metadata");
+		const icon = {
+			karma: "fa-praying-hands",
+			fudge: "fa-poop",
+		};
+		Object.entries(dieHardOptions).forEach(([key, data]) => {
+			const title = `data-tooltip="${data}" data-tooltip-direction="LEFT"`;
+			const button = $(`<span ${title}><i class="fas ${icon[key]}"></i></span>`);
+			metadata.append(button);
+		});
+	}
+});
