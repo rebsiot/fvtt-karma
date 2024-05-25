@@ -2,7 +2,7 @@ export class KarmaSettings extends foundry.abstract.DataModel {
 	static defineSchema() {
 		const fields = foundry.data.fields;
 		return {
-			enabled: new fields.BooleanField(),
+			enabled: new fields.BooleanField({ initial: true }),
 			chat: new fields.StringField({ initial: "full", choices: ["full", "simple", "none"] }),
 			type: new fields.StringField({ initial: "simple", choices: ["simple", "average"] }),
 			dice: new fields.NumberField({ initial: 20, choices: [4, 6, 8, 10, 12, 20, 100] }),

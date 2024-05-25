@@ -1,17 +1,17 @@
-#chat-controls .die-hard-karma-icon .hidden {
+#chat-controls .karma-icon .hidden {
 	display: none;
 }
-#chat-controls .die-hard-karma-icon {
+#chat-controls .karma-icon {
 	color: gray;
 	flex: 0;
 	padding-left: 5px;
 }
 
-#chat-controls .die-hard-karma-icon .active {
+#chat-controls .karma-icon .active {
 	color: white;
 }
 
-input.die-hard-checkbox + label {
+input.karma-checkbox + label {
 	padding: 5px 5px;
 	margin: 5px 5px 5px 5px;
 	background-color: #e7e7e7;
@@ -20,7 +20,7 @@ input.die-hard-checkbox + label {
 	border-radius: 3px;
 	cursor: pointer;
 }
-input.die-hard-checkbox:checked + label {
+input.karma-checkbox:checked + label {
 	background: rgba(0, 0, 0, 0.5);
 	color: var(--color-text-light-highlight);
 }

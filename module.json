@@ -1,15 +1,15 @@
 {
-	"id": "foundry-die-hard",
-	"title": "Die Hard",
-	"description": "Adjustments for DND5e & PF2e die rolls like fudging...",
+	"id": "karma",
+	"title": "Karmic Dice",
+	"description": "Bad luck protection for dice rolls.",
 	"authors": [
 		{
 			"name": "Matheus Clemente",
 			"discord": "mclemente"
 		}
 	],
-	"esmodules": ["module/die-hard.js"],
-	"styles": ["styles/die-hard.css"],
+	"esmodules": ["module/karma.js"],
+	"styles": ["styles/karma.css"],
 	"relationships": {
 		"requires": [
 			{

@@ -1,4 +1,4 @@
-export class DieHardKarmaApp extends FormApplication {
+export class KarmaApp extends FormApplication {
 	static get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {
 			closeOnSubmit: false,
@@ -7,15 +7,14 @@ export class DieHardKarmaApp extends FormApplication {
 			editable: game.user.isGM,
 			width: 500,
 			height: "auto",
-			template: "modules/foundry-die-hard/templates/die-hard-karma-config.hbs",
-			id: "die-hard-karma-config",
+			template: "modules/karma/templates/karma-config.hbs",
 			title: "Die Hard Karma Config",
 		});
 	}
 
 	async getData() {
 		return {
-			karma: game.settings.get("foundry-die-hard", "karma"),
+			karma: game.settings.get("karma", "karma"),
 			types: {
 				simple: "Simple",
 				average: "Average",
@@ -30,7 +29,7 @@ export class DieHardKarmaApp extends FormApplication {
 	 *Return an array of all users (map of id and name), defaulting to ones currently active
 	 */
 	static getUsers({ activeOnly = false, getGM = false } = {}) {
-		const karmaUsers = game.settings.get("foundry-die-hard", "karma").users;
+		const karmaUsers = game.settings.get("karma", "karma").users;
 		return game.users
 			.filter((user) => getGM === user.isGM && (!activeOnly || user.active))
 			.map((user) => ({
@@ -43,7 +42,7 @@ export class DieHardKarmaApp extends FormApplication {
 	static getkarmaPlayerStats() {
 		const playerStats = [];
 		for (const user of game.users) {
-			const stats = user.getFlag("foundry-die-hard", "karma")?.history ?? [];
+			const stats = user.getFlag("karma", "karma")?.history ?? [];
 			let avg = 0;
 			if (stats.length) {
 				const sum = stats.reduce((total, value) => total + value, 0);
@@ -65,9 +64,9 @@ export class DieHardKarmaApp extends FormApplication {
 			Boolean
 		);
 
-		const original = game.settings.get("foundry-die-hard", "karma");
+		const original = game.settings.get("karma", "karma");
 		await game.settings.set(
-			"foundry-die-hard",
+			"karma",
 			"karma",
 			foundry.utils.mergeObject(
 				{
