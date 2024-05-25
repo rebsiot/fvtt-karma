@@ -20,7 +20,7 @@ export class DieHardKarmaApp extends FormApplication {
 				simple: "Simple",
 				average: "Average",
 			},
-			playerStats: this.getkarmaPlayerStats(),
+			playerStats: this.constructor.getkarmaPlayerStats(),
 			whoGmOptions: this.constructor.getUsers({ activeOnly: true, getGM: true }),
 			whoUserOptions: this.constructor.getUsers(),
 		};
@@ -40,7 +40,7 @@ export class DieHardKarmaApp extends FormApplication {
 			}));
 	}
 
-	getkarmaPlayerStats() {
+	static getkarmaPlayerStats() {
 		const playerStats = [];
 		for (const user of game.users) {
 			const stats = user.getFlag("foundry-die-hard", "karma")?.history ?? [];
