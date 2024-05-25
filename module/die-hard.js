@@ -28,6 +28,18 @@ Hooks.once("init", () => {
 		},
 		onChange: (value) => refreshDieHardIcons(),
 	});
+
+	game.keybindings.register("foundry-die-hard", "openKarmDialog", {
+		name: "Open Karm Dialog",
+		hint: "",
+		editable: [],
+		onDown: () => {
+			new DieHardKarmaApp().render(true);
+		},
+		restricted: true,
+		precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,
+		repeat: false,
+	});
 });
 
 Hooks.on("renderChatLog", (app, html) => {
