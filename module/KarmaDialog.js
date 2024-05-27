@@ -1,6 +1,9 @@
+import { DiceField, DiceNumberField } from "./KarmaData.js";
+
 export class KarmaApp extends FormApplication {
 	static get defaultOptions() {
 		return foundry.utils.mergeObject(super.defaultOptions, {
+			id: "karma-config",
 			closeOnSubmit: false,
 			submitOnChange: true,
 			submitOnClose: true,
@@ -13,8 +16,17 @@ export class KarmaApp extends FormApplication {
 	}
 
 	async getData() {
+		const karma = game.settings.get("karma", "config");
+		const translation =
+			game.i18n.translations?.KARMA?.Form?.Inequality?.options ??
+			game.i18n._fallback?.KARMA?.Form?.Inequality?.options;
 		return {
-			karma: game.settings.get("karma", "karma"),
+			karma,
+			inputs: this._getInputs(karma),
+			inequalityOptions: Object.entries(translation).map(([key, value]) => ({
+				value: key,
+				label: value,
+			})),
 			types: {
 				simple: "Simple",
 				average: "Average",
@@ -25,11 +37,49 @@ export class KarmaApp extends FormApplication {
 		};
 	}
 
+	_getInputs(karma) {
+		const max = karma.dice;
+		const { fields } = foundry.data;
+		return {
+			dice: new DiceField({ initial: karma.dice }),
+			inequality: new fields.StringField({
+				initial: karma.inequality,
+				choices: ["≤", "<", "≥", ">"],
+				required: true,
+			}),
+			history: new DiceNumberField({ initial: karma.history, min: 2, max: 15 }),
+			threshold: new DiceNumberField({
+				initial: karma.threshold,
+				max,
+				hint: game.i18n.format("KARMA.Form.Threshold.hint", {
+					number: karma.threshold,
+					term: game.i18n.localize(`KARMA.Form.Inequality.options.${karma.inequality}`).toLowerCase(),
+				}),
+			}),
+			floor: new DiceNumberField({ initial: karma.floor, max }),
+			nudge: new DiceNumberField({
+				initial: karma.nudge,
+				max,
+				hint: game.i18n.format("KARMA.Form.Nudge.hint", {
+					number: karma.nudge,
+					number2: karma.nudge * 2,
+					number3: karma.nudge * 3,
+					threshold: karma.threshold,
+					cumulatively: karma.cumulative ? game.i18n.localize("KARMA.Form.Nudge.cumulatively") : "",
+					term: game.i18n.localize(
+						`KARMA.Form.Terms.${["≤", "<"].includes(karma.inequality) ? "greater" : "less"}`
+					),
+				}),
+			}),
+			cumulative: new fields.BooleanField({ initial: karma.cumulative }),
+		};
+	}
+
 	/**
 	 *Return an array of all users (map of id and name), defaulting to ones currently active
 	 */
 	static getUsers({ activeOnly = false, getGM = false } = {}) {
-		const karmaUsers = game.settings.get("karma", "karma").users;
+		const karmaUsers = game.settings.get("karma", "config").users;
 		return game.users
 			.filter((user) => getGM === user.isGM && (!activeOnly || user.active))
 			.map((user) => ({
@@ -42,16 +92,16 @@ export class KarmaApp extends FormApplication {
 	static getkarmaPlayerStats() {
 		const playerStats = [];
 		for (const user of game.users) {
-			const stats = user.getFlag("karma", "karma")?.history ?? [];
+			const history = user.getFlag("karma", "stats")?.history ?? [];
 			let avg = 0;
-			if (stats.length) {
-				const sum = stats.reduce((total, value) => total + value, 0);
-				avg = Math.round((sum / stats.length) * 10) / 10;
+			if (history.length) {
+				const sum = history.reduce((total, value) => total + value, 0);
+				avg = Math.round((sum / history.length) * 10) / 10;
 			}
 			playerStats.push({
 				name: user.name,
-				stats,
-				statsString: stats.join(", "),
+				stats: history,
+				statsString: history.join(", "),
 				avg,
 			});
 		}
@@ -64,10 +114,10 @@ export class KarmaApp extends FormApplication {
 			Boolean
 		);
 
-		const original = game.settings.get("karma", "karma");
+		const original = game.settings.get("karma", "config");
 		await game.settings.set(
 			"karma",
-			"karma",
+			"config",
 			foundry.utils.mergeObject(
 				{
 					floor: formData.floor ?? original.floor,

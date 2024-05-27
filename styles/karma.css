@@ -11,7 +11,15 @@
 	color: white;
 }
 
-input.karma-checkbox + label {
+form h3.form-header {
+	border: none;
+}
+
+form p.notes span.range-value {
+	font-weight: bold;
+}
+
+form input.karma-checkbox + label {
 	padding: 5px 5px;
 	margin: 5px 5px 5px 5px;
 	background-color: #e7e7e7;
@@ -20,7 +28,7 @@ input.karma-checkbox + label {
 	border-radius: 3px;
 	cursor: pointer;
 }
-input.karma-checkbox:checked + label {
+form input.karma-checkbox:checked + label {
 	background: rgba(0, 0, 0, 0.5);
 	color: var(--color-text-light-highlight);
 }

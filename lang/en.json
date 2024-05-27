@@ -1,2 +1,48 @@
 {
+	"KARMA": {
+		"Form": {
+			"Faces": {
+				"label": "Die Faces",
+				"hint": "The number of faces of the die."
+			},
+			"Inequality": {
+				"label": "Inequality",
+				"hint": "Sets when the Karma should be triggered, based on the given inequality. Example: {number} {symbol} ",
+				"options": {
+					"≤": "Less than or equal to",
+					"<": "Less than",
+					"≥": "Greater than or equal to",
+					">": "Greater then"
+				}
+			},
+			"History": {
+				"label": "History",
+				"hint": {
+					"simple": "If the last {number} rolls are...",
+					"average": "If the average of the last {number} rolls is..."
+				}
+			},
+			"Threshold": {
+				"label": "Threshold",
+				"hint": "...{term} {number}, then..."
+			},
+			"Floor": {
+				"label": "Next Roll Floor",
+				"hint": "...the next die roll will be {number} or higher."
+			},
+			"Nudge": {
+				"label": "Next Roll Adjustment",
+				"hint": "...the next die roll and each following roll will be adjusted by {number}{cumulatively} ({number}, {number2}, {number3}...), until the average is {term} or equal than {threshold}.",
+				"cumulatively": " cumulatively"
+			},
+			"Cumulative": {
+				"label": "Cumulative Adjustment",
+				"hint": "Sets if the following roll adjusment will accumulate."
+			},
+			"Terms": {
+				"greater": "greater",
+				"less": "less"
+			}
+		}
+	}
 }

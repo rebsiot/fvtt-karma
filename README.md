@@ -15,10 +15,6 @@ For Simple Karma, if all the previous N rolls are below the threshold, the follo
 
 For Average Karma, it the average of the previous N rolls is below the threshold, it will adjust the roll by incrementing a set value until the threshold is reached. The adjusment can be fixed (+1, +1, +1...) or cumulative (+1, +2, +3...).
 
-## Currently Supported Rolls
-
--   d20
-
 # Attribution
 
 This project is a fork of [Die Hard](https://github.com/UranusBytes/foundry-die-hard), made by Uranus Bytes AKA Jeremy.

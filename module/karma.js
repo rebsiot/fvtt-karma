@@ -1,4 +1,4 @@
-import { KarmaSettings } from "./KarmaData.js";
+import { KarmaData } from "./KarmaData.js";
 import { KarmaApp } from "./KarmaDialog.js";
 
 Hooks.once("init", () => {
@@ -12,21 +12,52 @@ Hooks.once("init", () => {
 		restricted: true,
 	});
 
-	game.settings.register("karma", "karma", {
+	game.settings.register("karma", "config", {
 		name: "Karma",
 		hint: "Simple Karma Settings",
 		scope: "world",
 		config: false,
-		type: KarmaSettings,
+		type: KarmaData,
 		default: {
-			enabled: true,
+			enabled: false,
+			dice: 20,
+			inequality: "≤",
 			history: 2,
 			threshold: 7,
 			floor: 13,
 			nudge: 5,
 			cumulative: false,
 		},
-		onChange: (value) => refreshKarmaIcons(),
+		onChange: (value) => {
+			document.getElementById("karma-icon")?.classList.toggle("active", value.enabled);
+		},
+	});
+
+	game.settings.register("karma", "showChatControlIcon", {
+		name: "Show Icon on Chat Control",
+		hint: "",
+		scope: "world",
+		config: true,
+		type: Boolean,
+		default: true,
+		onChange: (value) => {
+			document.getElementById("karma-icon")?.classList.toggle("hidden", !value);
+		},
+	});
+
+	game.settings.register("karma", "showChatMessageIcon", {
+		name: "Show Icon on Chat Messages",
+		hint: "",
+		scope: "world",
+		config: true,
+		type: Boolean,
+		default: true,
+		onChange: (value) => {
+			game.messages.contents
+				.slice(-100)
+				.filter((m) => m.rolls?.length && m.rolls.find((r) => r.terms.find((t) => t.options.karma)))
+				.forEach((m) => ui.chat.updateMessage(m));
+		},
 	});
 
 	game.keybindings.register("karma", "openKarmDialog", {
@@ -51,27 +82,26 @@ Hooks.on("renderChatLog", (app, html) => {
 	karmaButton.addEventListener("click", (ev) => new KarmaApp().render(true));
 
 	html.find(".chat-control-icon").after(karmaButton);
-	refreshKarmaIcons();
+	const karmaIcon = document.getElementById("karma-icon");
+	karmaIcon?.classList.toggle("active", game.settings.get("karma", "config").enabled);
+	karmaIcon?.classList.toggle("hidden", !game.settings.get("karma", "showChatControlIcon"));
 });
 
 Hooks.on("renderChatMessage", (message, html, data) => {
-	if (!game.user.isGM || !message.rolls?.length) return;
+	if (!game.user.isGM || !message.rolls?.length || !game.settings.get("karma", "showChatMessageIcon")) return;
 	const terms = message.rolls.find((r) => r.terms.find((t) => t.options.karma))?.terms;
 	if (terms) {
-		const desc = terms.find((t) => t.options.karma).options.karma;
+		const descs = terms.filter((t) => t.options.karma).map((t) => t.options.karma);
 		const button = $(
-			`<span data-tooltip="${desc}" data-tooltip-direction="LEFT"><i class="fas fa-praying-hands"></i></span>`
+			`<span
+			data-tooltip="${descs.join("\n")}"
+			data-tooltip-direction="LEFT">
+				<i class="fas fa-praying-hands"></i>
+			</span>`
 		);
 		html.find(".message-metadata").append(button);
 	}
 });
-
-function refreshKarmaIcons() {
-	const karmaIcon = document.getElementById("karma-icon");
-	const karmaEnabled = game.settings.get("karma", "karma").enabled;
-	karmaIcon?.classList.toggle("hidden", !karmaEnabled);
-	karmaIcon?.classList.toggle("active", karmaEnabled);
-}
 
 /**
  * Wrapper for raw dice
@@ -79,12 +109,12 @@ function refreshKarmaIcons() {
  * @param {object} options
  * @returns {{result: undefined, active: boolean}|*}
  */
-function wrapDiceTermRoll(wrapped, options) {
-	const karma = game.settings.get("karma", "karma");
-	const roll = wrapped(options);
+async function wrapDiceTermRoll(wrapped, options) {
+	const karma = game.settings.get("karma", "config");
+	const roll = await wrapped(options);
 	if (karma.enabled && this.faces === karma.dice) {
 		if (!karma.users.length || karma.users.includes(game.user.id)) {
-			const userKarma = game.user.getFlag("karma", "karma") ?? {
+			const userKarma = game.user.getFlag("karma", "stats") ?? {
 				history: [],
 				cumulative: 0,
 			};
@@ -94,54 +124,61 @@ function wrapDiceTermRoll(wrapped, options) {
 				history.shift();
 			}
 
-			if (karma.type === "simple") {
-				const tempResult = history.findIndex((element) => element > karma.threshold);
+			if (!options.maximize && !options.minimize) {
+				const originalResult = roll.result;
+				const showChatMessageIcon = game.settings.get("karma", "showChatMessageIcon");
+				const comparison = (v1, v2) => {
+					switch (karma.inequality) {
+						case "≤":
+							return v1 <= v2;
+						case "<":
+							return v1 < v2;
+						case "≥":
+							return v1 >= v2;
+						case ">":
+							return v1 > v2;
+					}
+				};
+				if (karma.type === "simple") {
+					const tempResult = history.findIndex((element) => !comparison(element, karma.threshold));
 
-				if (history.length === karma.history && tempResult === -1) {
-					let originalResult = roll.result;
-					while (roll.result < karma.floor) {
-						// This is copied from resources/app/client/dice/terms/dice.js - rolls method
-						if (options.minimize) roll.result = Math.min(1, this.faces);
-						else if (options.maximize) roll.result = this.faces;
-						else roll.result = Math.ceil(CONFIG.Dice.randomUniform() * this.faces);
-					}
+					if (history.length === karma.history && tempResult === -1) {
+						while (roll.result < karma.floor) {
+							roll.result = Math.ceil(CONFIG.Dice.randomUniform() * this.faces);
+						}
 
-					history.push(roll.result);
-					while (history.length > karma.history) {
-						history.shift();
+						history.push(roll.result);
+						while (history.length > karma.history) {
+							history.shift();
+						}
+						if (showChatMessageIcon) {
+							this.options.karma = `Adjusted ${originalResult} to a ${roll.result}.`;
+						}
 					}
-					if (karma.chat !== "none") {
-						this.options.karma = `Adjusted ${originalResult} to a ${roll.result}.`;
-					}
+				} else if (karma.type === "average") {
+					const tempResult = history.reduce((a, b) => a + b, 0) / history.length;
+
+					if (history.length === karma.history && comparison(tempResult, karma.threshold)) {
+						if (karma.cumulative) userKarma.cumulative += 1;
+						else userKarma.cumulative = 1;
+
+						const nudge = userKarma.cumulative * karma.nudge;
+						if (["≤", "<"].includes(karma.inequality)) roll.result += nudge;
+						else roll.result -= nudge;
+						roll.result = Math.clamp(roll.result, 1, this.faces);
+
+						history.push(roll.result);
+						while (history.length > karma.history) {
+							history.shift();
+						}
+						if (showChatMessageIcon) {
+							this.options.karma = `Averaged ${originalResult} to a ${roll.result}.`;
+						}
+					} else userKarma.cumulative = 0;
 				}
-				game.user.setFlag("karma", "karma", userKarma);
-			} else if (karma.type === "average") {
-				const tempResult = history.reduce((a, b) => a + b, 0) / history.length;
-
-				if (history.length === karma.history && tempResult <= karma.threshold) {
-					let originalResult = roll.result;
-					if (karma.cumulative) userKarma.cumulative += 1;
-					else userKarma.cumulative = 1;
-
-					roll.result += userKarma.cumulative * karma.nudge;
-
-					// Max at num faces
-					if (roll.result > this.faces) {
-						roll.result = this.faces;
-					}
-
-					history.push(roll.result);
-					while (history.length > history.history) {
-						history.shift();
-					}
-					if (karma.chat !== "none") {
-						this.options.karma = `Averaged ${originalResult} to a ${roll.result}.`;
-					}
-				} else userKarma.cumulative = 0;
-
-				game.user.setFlag("karma", "karma", userKarma);
+				game.user.setFlag("karma", "stats", userKarma);
+				this.results[this.results.length - 1] = roll;
 			}
-			this.results[this.results.length - 1] = roll;
 		}
 	}
 	return roll;

@@ -16,6 +16,12 @@
 				"id": "lib-wrapper",
 				"type": "module"
 			}
+		],
+		"conflicts": [
+			{
+				"id": "foundryvtt-die-hard",
+				"type": "module"
+			}
 		]
 	},
 	"languages": [
@@ -26,8 +32,8 @@
 		}
 	],
 	"compatibility": {
-		"minimum": 11,
-		"verified": 11
+		"minimum": 12,
+		"verified": 12
 	},
 	"url": "This is auto replaced",
 	"version": "This is auto replaced",
