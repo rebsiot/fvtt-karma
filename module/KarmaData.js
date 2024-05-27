@@ -2,7 +2,7 @@ export class KarmaData extends foundry.abstract.DataModel {
 	static defineSchema() {
 		const { fields } = foundry.data;
 		return {
-			enabled: new fields.BooleanField({ initial: true }),
+			enabled: new fields.BooleanField(),
 			type: new fields.StringField({ initial: "simple", choices: ["simple", "average"] }),
 			dice: new DiceField(),
 			inequality: new fields.StringField({
