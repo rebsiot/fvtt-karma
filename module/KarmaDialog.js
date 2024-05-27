@@ -1,4 +1,4 @@
-import { DiceFaceField, DiceNumberField } from "./KarmaData.js";
+import { DiceField, DiceNumberField } from "./KarmaData.js";
 
 export class KarmaApp extends FormApplication {
 	static get defaultOptions() {
@@ -40,7 +40,7 @@ export class KarmaApp extends FormApplication {
 		const max = karma.dice;
 		const { fields } = foundry.data;
 		return {
-			dice: new DiceFaceField({ initial: karma.dice }),
+			dice: new DiceField({ initial: karma.dice }),
 			inequality: new fields.StringField({
 				initial: karma.inequality,
 				choices: ["≤", "<", "≥", ">"],
