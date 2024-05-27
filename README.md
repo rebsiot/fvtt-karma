@@ -11,7 +11,7 @@ This module supports all dice rolls from d2 to d100, either rolling below or abo
 
 With the module enabled, a praying hands icon will be displayed above the message tray. Clicking on this icon will open a configuration dialog to adjust the karma.
 
-![](docs/die-hard-karma-0.jpg)
+![](docs/karma-0.jpg)
 
 Simple Karma: if all the previous N rolls are below the threshold, the following roll will be adjusted to a set value.
 

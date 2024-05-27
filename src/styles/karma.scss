@@ -1,0 +1,29 @@
+#chat-controls {
+  .karma-icon {
+    color: gray;
+    flex: 0;
+    padding-left: 5px;
+
+    .active {
+      color: white;
+    }
+  }
+}
+
+form {
+  input.karma-checkbox {
+    & + label {
+      padding: 5px 5px;
+      margin: 5px 5px 5px 5px;
+      background-color: #e7e7e7;
+      border: 1px solid #3d3d3d;
+      transition: background-color 0.3s ease-in-out;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    &:checked + label {
+      background: rgba(0, 0, 0, 0.5);
+      color: var(--color-text-light-highlight);
+    }
+  }
+}

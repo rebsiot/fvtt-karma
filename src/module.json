@@ -11,12 +11,6 @@
 	"esmodules": ["module/karma.js"],
 	"styles": ["styles/karma.css"],
 	"relationships": {
-		"requires": [
-			{
-				"id": "lib-wrapper",
-				"type": "module"
-			}
-		],
 		"conflicts": [
 			{
 				"id": "foundryvtt-die-hard",

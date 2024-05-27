@@ -1,3 +1,4 @@
+import { libWrapper } from "../libs/libWrapper.js";
 import { KarmaData } from "./KarmaData.js";
 import { KarmaApp } from "./KarmaDialog.js";
 

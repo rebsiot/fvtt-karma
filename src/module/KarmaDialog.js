@@ -18,8 +18,8 @@ export class KarmaApp extends FormApplication {
 	async getData() {
 		const karma = game.settings.get("karma", "config");
 		const translation =
-			game.i18n.translations?.KARMA?.Form?.Inequality?.options ??
-			game.i18n._fallback?.KARMA?.Form?.Inequality?.options;
+			game.i18n.translations?.KARMA?.Form?.Inequality?.options
+				?? game.i18n._fallback?.KARMA?.Form?.Inequality?.options;
 		return {
 			karma,
 			inputs: this._getInputs(karma),
