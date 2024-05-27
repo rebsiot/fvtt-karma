@@ -4,17 +4,15 @@ import { KarmaApp } from "./KarmaDialog.js";
 Hooks.once("init", () => {
 	libWrapper.register("karma", "CONFIG.Dice.termTypes.DiceTerm.prototype.roll", wrapDiceTermRoll, "MIXED");
 	game.settings.registerMenu("karma", "KarmaDialog", {
-		name: "Karma",
-		label: "Karma",
-		hint: "",
+		name: "KARMA.Karma",
+		label: "KARMA.Settings.KarmaDialog.label",
+		hint: "KARMA.Settings.KarmaDialog.hint",
 		icon: "fas fa-praying-hands",
 		type: KarmaApp,
 		restricted: true,
 	});
 
 	game.settings.register("karma", "config", {
-		name: "Karma",
-		hint: "Simple Karma Settings",
 		scope: "world",
 		config: false,
 		type: KarmaData,
@@ -34,8 +32,8 @@ Hooks.once("init", () => {
 	});
 
 	game.settings.register("karma", "showChatControlIcon", {
-		name: "Show Icon on Chat Control",
-		hint: "",
+		name: "KARMA.Settings.showChatControlIcon.label",
+		hint: "KARMA.Settings.showChatControlIcon.hint",
 		scope: "world",
 		config: true,
 		type: Boolean,
@@ -46,8 +44,8 @@ Hooks.once("init", () => {
 	});
 
 	game.settings.register("karma", "showChatMessageIcon", {
-		name: "Show Icon on Chat Messages",
-		hint: "",
+		name: "KARMA.Settings.showChatMessageIcon.label",
+		hint: "KARMA.Settings.showChatMessageIcon.hint",
 		scope: "world",
 		config: true,
 		type: Boolean,
@@ -61,15 +59,11 @@ Hooks.once("init", () => {
 	});
 
 	game.keybindings.register("karma", "openKarmDialog", {
-		name: "Open Karm Dialog",
-		hint: "",
-		editable: [],
+		name: "KARMA.Settings.KarmaDialog.label",
 		onDown: () => {
 			new KarmaApp().render(true);
 		},
 		restricted: true,
-		precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,
-		repeat: false,
 	});
 });
 
@@ -91,10 +85,10 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 	if (!game.user.isGM || !message.rolls?.length || !game.settings.get("karma", "showChatMessageIcon")) return;
 	const terms = message.rolls.find((r) => r.terms.find((t) => t.options.karma))?.terms;
 	if (terms) {
-		const descs = terms.filter((t) => t.options.karma).map((t) => t.options.karma);
+		const karma = terms.find((t) => t.options.karma).options.karma;
 		const button = $(
 			`<span
-			data-tooltip="${descs.join("\n")}"
+			data-tooltip="${karma.join("<br>")}"
 			data-tooltip-direction="LEFT">
 				<i class="fas fa-praying-hands"></i>
 			</span>`
@@ -125,8 +119,7 @@ async function wrapDiceTermRoll(wrapped, options) {
 			}
 
 			if (!options.maximize && !options.minimize) {
-				const originalResult = roll.result;
-				const showChatMessageIcon = game.settings.get("karma", "showChatMessageIcon");
+				const oldRoll = roll.result;
 				const comparison = (v1, v2) => {
 					switch (karma.inequality) {
 						case "≤":
@@ -148,12 +141,6 @@ async function wrapDiceTermRoll(wrapped, options) {
 						}
 
 						history.push(roll.result);
-						while (history.length > karma.history) {
-							history.shift();
-						}
-						if (showChatMessageIcon) {
-							this.options.karma = `Adjusted ${originalResult} to a ${roll.result}.`;
-						}
 					}
 				} else if (karma.type === "average") {
 					const tempResult = history.reduce((a, b) => a + b, 0) / history.length;
@@ -168,13 +155,15 @@ async function wrapDiceTermRoll(wrapped, options) {
 						roll.result = Math.clamp(roll.result, 1, this.faces);
 
 						history.push(roll.result);
-						while (history.length > karma.history) {
-							history.shift();
-						}
-						if (showChatMessageIcon) {
-							this.options.karma = `Averaged ${originalResult} to a ${roll.result}.`;
-						}
 					} else userKarma.cumulative = 0;
+				}
+				while (history.length > karma.history) {
+					history.shift();
+				}
+				if (oldRoll !== roll.result) {
+					const message = game.i18n.format("KARMA.AdjustRoll", { oldRoll, newRoll: roll.result });
+					if (this.options.karma) this.options.karma.push(message);
+					else this.options.karma = [message];
 				}
 				game.user.setFlag("karma", "stats", userKarma);
 				this.results[this.results.length - 1] = roll;

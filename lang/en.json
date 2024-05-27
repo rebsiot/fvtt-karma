@@ -1,6 +1,29 @@
 {
 	"KARMA": {
+		"Karma": "Karma",
+		"AdjustRoll": "Adjusted {oldRoll} to {newRoll}.",
+		"Settings": {
+			"KarmaDialog": {
+				"label": "Open Karma Configuration",
+				"hint": "Configure the configurations for Karma."
+			},
+			"showChatControlIcon": {
+				"label": "Chat Icon",
+				"hint": "Displays the icon above the chat box."
+			},
+			"showChatMessageIcon": {
+				"label": "Message Icon",
+				"hint": "Displays the icon on chat messages that got changed by the karma."
+			}
+		},
 		"Form": {
+			"title": "Karma Configuration",
+			"enable": "Enable",
+			"UserPicker": {
+				"title": "Who should be affected by karma?"
+			},
+			"Dice": "Dice",
+			"Type": "Karma Type",
 			"Faces": {
 				"label": "Die Faces",
 				"hint": "The number of faces of the die."

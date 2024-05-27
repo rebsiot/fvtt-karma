@@ -1,4 +1,4 @@
-import { DiceField, DiceNumberField } from "./KarmaData.js";
+import { DiceFaceField, DiceNumberField } from "./KarmaData.js";
 
 export class KarmaApp extends FormApplication {
 	static get defaultOptions() {
@@ -11,7 +11,7 @@ export class KarmaApp extends FormApplication {
 			width: 500,
 			height: "auto",
 			template: "modules/karma/templates/karma-config.hbs",
-			title: "Die Hard Karma Config",
+			title: "KARMA.Form.title",
 		});
 	}
 
@@ -31,8 +31,7 @@ export class KarmaApp extends FormApplication {
 				simple: "Simple",
 				average: "Average",
 			},
-			playerStats: this.constructor.getkarmaPlayerStats(),
-			whoGmOptions: this.constructor.getUsers({ activeOnly: true, getGM: true }),
+			whoGmOptions: this.constructor.getUsers({ gm: true }),
 			whoUserOptions: this.constructor.getUsers(),
 		};
 	}
@@ -41,7 +40,7 @@ export class KarmaApp extends FormApplication {
 		const max = karma.dice;
 		const { fields } = foundry.data;
 		return {
-			dice: new DiceField({ initial: karma.dice }),
+			dice: new DiceFaceField({ initial: karma.dice }),
 			inequality: new fields.StringField({
 				initial: karma.inequality,
 				choices: ["≤", "<", "≥", ">"],
@@ -78,34 +77,15 @@ export class KarmaApp extends FormApplication {
 	/**
 	 *Return an array of all users (map of id and name), defaulting to ones currently active
 	 */
-	static getUsers({ activeOnly = false, getGM = false } = {}) {
+	static getUsers({ activeOnly = false, gm = false } = {}) {
 		const karmaUsers = game.settings.get("karma", "config").users;
 		return game.users
-			.filter((user) => getGM === user.isGM && (!activeOnly || user.active))
+			.filter((user) => gm === user.isGM && (!activeOnly || user.active))
 			.map((user) => ({
 				id: user.id,
 				name: user.name,
 				karma: karmaUsers.includes(user.id),
 			}));
-	}
-
-	static getkarmaPlayerStats() {
-		const playerStats = [];
-		for (const user of game.users) {
-			const history = user.getFlag("karma", "stats")?.history ?? [];
-			let avg = 0;
-			if (history.length) {
-				const sum = history.reduce((total, value) => total + value, 0);
-				avg = Math.round((sum / history.length) * 10) / 10;
-			}
-			playerStats.push({
-				name: user.name,
-				stats: history,
-				statsString: history.join(", "),
-				avg,
-			});
-		}
-		return playerStats;
 	}
 
 	async _updateObject(event, formData) {

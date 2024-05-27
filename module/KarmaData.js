@@ -31,7 +31,7 @@ const DICE_DEFAULTS = {
 
 export class DiceField extends foundry.data.fields.NumberField {
 	static get _defaults() {
-		return mergeObject(super._defaults, {
+		return foundry.utils.mergeObject(super._defaults, {
 			...DICE_DEFAULTS,
 			initial: 20,
 			min: 2,
@@ -53,7 +53,7 @@ export class DiceNumberField extends foundry.data.fields.NumberField {
 	}
 
 	static get _defaults() {
-		return mergeObject(super._defaults, {
+		return foundry.utils.mergeObject(super._defaults, {
 			...DICE_DEFAULTS,
 			min: 1,
 		});
