@@ -5,7 +5,7 @@
 
 Keep a history of dice rolls per user and, if they don't meet a threshold over a defined history, adjust its result based on how you configure it.
 
-This module supports all dice rolls from d2 to d100, either rolling below or above the threshold.
+This module supports all dice rolls from d2 to d100, either rolling under or over the threshold.
 
 ## How to Use
 
