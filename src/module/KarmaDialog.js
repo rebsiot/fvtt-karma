@@ -100,9 +100,10 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		const checked = !target.classList.contains("checked");
 		target.classList.toggle("checked", checked);
 		for (const element of target.closest(".form-group").querySelectorAll(".karma-checkbox:has(input)")) {
-			element.querySelector("input").setAttribute("checked", checked);
+			element.querySelector("input").checked = checked;
 			element.querySelector("label").classList.toggle("checked", checked);
 		}
+		this.element.dispatchEvent(new Event("change"));
 	}
 
 	/**
