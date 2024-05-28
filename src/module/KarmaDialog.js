@@ -83,10 +83,12 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 				max,
 				hint: game.i18n.format("KARMA.Form.Nudge.hint", {
 					number: karma.nudge,
-					number2: karma.nudge * 2,
-					number3: karma.nudge * 3,
 					threshold: karma.threshold,
-					cumulatively: karma.cumulative ? game.i18n.localize("KARMA.Form.Nudge.cumulatively") : "",
+					cumulatively: karma.cumulative ? game.i18n.format("KARMA.Form.Nudge.cumulatively", {
+						number: karma.nudge,
+						number2: karma.nudge * 2,
+						number3: karma.nudge * 3,
+					}) : "",
 					term: game.i18n.localize(
 						`KARMA.Form.Terms.${["≤", "<"].includes(karma.inequality) ? "greater" : "less"}`
 					),
