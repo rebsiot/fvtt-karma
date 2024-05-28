@@ -1,71 +1,72 @@
 {
-	"KARMA": {
-		"Karma": "Karma",
-		"AdjustRoll": "Adjusted {oldRoll} to {newRoll}.",
-		"Settings": {
-			"KarmaDialog": {
-				"label": "Open Karma Configuration",
-				"hint": "Configure the configurations for Karma."
-			},
-			"showChatControlIcon": {
-				"label": "Chat Icon",
-				"hint": "Displays the icon above the chat box."
-			},
-			"showChatMessageIcon": {
-				"label": "Message Icon",
-				"hint": "Displays the icon on chat messages that got changed by the karma."
-			}
-		},
-		"Form": {
-			"title": "Karma Configuration",
-			"enable": "Enable",
-			"UserPicker": {
-				"title": "Who should be affected by karma?"
-			},
-			"Dice": "Dice",
-			"Type": "Type",
-			"Faces": {
-				"label": "Faces",
-				"hint": "The number of faces of the die."
-			},
-			"Inequality": {
-				"label": "Inequality",
-				"hint": "Sets when the Karma should be triggered, based on the given inequality.",
-				"options": {
-					"≤": "Less than or equal to",
-					"<": "Less than",
-					"≥": "Greater than or equal to",
-					">": "Greater then"
-				}
-			},
-			"History": {
-				"label": "History",
-				"hint": {
-					"simple": "If the last {number} rolls are...",
-					"average": "If the average of the last {number} rolls is..."
-				}
-			},
-			"Threshold": {
-				"label": "Threshold",
-				"hint": "...{term} {number}, then..."
-			},
-			"Floor": {
-				"label": "Next Roll Floor",
-				"hint": "...the next die roll will be {number} or higher."
-			},
-			"Nudge": {
-				"label": "Next Roll Adjustment",
-				"hint": "...the next die roll and each following roll will be adjusted by {number}{cumulatively} ({number}, {number2}, {number3}...), until the average is {term} or equal than {threshold}.",
-				"cumulatively": " cumulatively"
-			},
-			"Cumulative": {
-				"label": "Cumulative Adjustment",
-				"hint": "Sets if the following roll adjusment will accumulate."
-			},
-			"Terms": {
-				"greater": "greater",
-				"less": "less"
-			}
-		}
-	}
+  "KARMA": {
+    "Karma": "Karma",
+    "AdjustRoll": "Adjusted {oldRoll} to {newRoll}.",
+    "Settings": {
+      "KarmaDialog": {
+        "label": "Open Karma Configuration",
+        "hint": "Configure the configurations for Karma."
+      },
+      "showChatControlIcon": {
+        "label": "Chat Icon",
+        "hint": "Displays the icon above the chat box."
+      },
+      "showChatMessageIcon": {
+        "label": "Message Icon",
+        "hint": "Displays the icon on chat messages that got changed by the karma."
+      }
+    },
+    "Form": {
+      "title": "Karma Configuration",
+      "enable": "Enable",
+      "UserPicker": {
+        "title": "Who should be affected by karma?"
+      },
+      "All": "All",
+      "Dice": "Dice",
+      "Type": "Type",
+      "Faces": {
+        "label": "Faces",
+        "hint": "The number of faces of the die."
+      },
+      "Inequality": {
+        "label": "Inequality",
+        "hint": "Sets when the Karma should be triggered, based on the given inequality.",
+        "options": {
+          "≤": "Less than or equal to",
+          "<": "Less than",
+          "≥": "Greater than or equal to",
+          ">": "Greater then"
+        }
+      },
+      "History": {
+        "label": "History",
+        "hint": {
+          "simple": "If the last {number} rolls are...",
+          "average": "If the average of the last {number} rolls is..."
+        }
+      },
+      "Threshold": {
+        "label": "Threshold",
+        "hint": "...{term} {number}, then..."
+      },
+      "Floor": {
+        "label": "Next Roll Floor",
+        "hint": "...the next die roll will be {number} or higher."
+      },
+      "Nudge": {
+        "label": "Next Roll Adjustment",
+        "hint": "...the next die roll and each following roll will be adjusted by {number}{cumulatively} ({number}, {number2}, {number3}...), until the average is {term} or equal than {threshold}.",
+        "cumulatively": " cumulatively"
+      },
+      "Cumulative": {
+        "label": "Cumulative Adjustment",
+        "hint": "Sets if the following roll adjusment will accumulate."
+      },
+      "Terms": {
+        "greater": "greater",
+        "less": "less"
+      }
+    }
+  }
 }

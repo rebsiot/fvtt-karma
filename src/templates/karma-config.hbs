@@ -1,106 +1,134 @@
-<form>
-	<div class="form-group">
-		<label>{{localize "KARMA.Form.enable"}}</label>
-		<div class="form-fields">
-			<input type="checkbox" name="enabled" {{checked karma.enabled}} />
-		</div>
-	</div>
-	<fieldset>
-		<legend>{{localize "KARMA.Form.UserPicker.title"}}</legend>
-		<div class="flexcol">
-			<div class="form-group flexrow">
-				{{#each whoGmOptions}}
-					<div>
-						<input
-							type="checkbox"
-							name="gms.{{@index}}"
-							value="{{id}}"
-							class="karma-checkbox"
-							id="karmaWho-{{id}}"
-							data-dtype="String"
-							data-value="{{id}}"
-							{{checked karma}}
-							hidden
-						/>
-						<label for="karmaWho-{{id}}">{{name}}</label>
-					</div>
-				{{/each}}
-			</div>
-			<div class="form-group flexrow">
-				{{#each whoUserOptions}}
-					<div>
-						<input
-							type="checkbox"
-							name="players.{{@index}}"
-							value="{{id}}"
-							class="karma-checkbox"
-							id="karmaWho-{{id}}"
-							data-dtype="String"
-							data-value="{{id}}"
-							{{checked karma}}
-							hidden
-						/>
-						<label for="karmaWho-{{id}}">{{name}}</label>
-					</div>
-				{{/each}}
-			</div>
-		</div>
-	</fieldset>
-	<fieldset>
-		<legend>{{localize "KARMA.Form.Dice"}}</legend>
-		{{formGroup
-			inputs.dice
-			name="dice"
-			label=(localize "KARMA.Form.Faces.label")
-			hint=(localize "KARMA.Form.Faces.hint")
-		}}
-		{{formGroup
-			inputs.inequality
-			name="inequality"
-			label=(localize "KARMA.Form.Inequality.label")
-			hint=(localize "KARMA.Form.Inequality.hint")
-			value=karma.inequality
-			options=inequalityOptions
-			localize=true
-		}}
-	</fieldset>
-	<fieldset>
-		<legend>{{localize "KARMA.Karma"}}</legend>
-		<div class="form-group">
-			<label>{{localize "KARMA.Form.Type"}}</label>
-			<div class="form-fields">
-				<div class="form-fields">
-					<select name="type">
-						{{selectOptions types selected=karma.type}}
-					</select>
-				</div>
-			</div>
-		</div>
-		{{formGroup
-			inputs.history
-			name="history"
-			label=(localize "KARMA.Form.History.label")
-			hint=(localize (concat "KARMA.Form.History.hint." karma.type) number=karma.history)
-		}}
-		{{formGroup inputs.threshold name="threshold" label=(localize "KARMA.Form.Threshold.label")}}
-		{{#if (eq karma.type "simple")}}
-			{{formGroup
-				inputs.floor
-				name="floor"
-				label=(localize "KARMA.Form.Floor.label")
-				hint=(localize "KARMA.Form.Floor.hint" number=karma.floor)
-			}}
-		{{/if}}
+<div>
+  <div class="form-group">
+    <label>{{localize "KARMA.Form.enable"}}</label>
+    <div class="form-fields">
+      <input type="checkbox" name="enabled" {{checked karma.enabled}} />
+    </div>
+  </div>
+  <fieldset class="user-picker">
+    <legend>{{localize "KARMA.Form.UserPicker.title"}}</legend>
+    <div class="flexcol">
+      <div class="form-group flexrow">
+        {{#if (gt gms.length 1)}}
+          <div class="karma-checkbox">
+            <label class="{{checked allGms}}" data-action="markUsers">
+              {{localize "KARMA.Form.All"}}
+            </label>
+          </div>
+        {{/if}}
+        {{#each gms}}
+          <div class="karma-checkbox">
+            <input
+              type="checkbox"
+              name="gms.{{@index}}"
+              value="{{id}}"
+              id="karmaWho-{{id}}"
+              data-dtype="String"
+              data-value="{{id}}"
+              {{checked karma}}
+              hidden
+            />
+            <label
+              class="{{checked karma}}"
+              for="karmaWho-{{id}}"
+            >{{name}}</label>
+          </div>
+        {{/each}}
+      </div>
+      <div class="form-group flexrow">
+        {{#if (gt players.length 1)}}
+          <div class="karma-checkbox">
+            <label class="{{checked allPlayers}}" data-action="markUsers">
+              {{localize "KARMA.Form.All"}}
+            </label>
+          </div>
+        {{/if}}
+        {{#each players}}
+          <div class="karma-checkbox">
+            <input
+              type="checkbox"
+              name="players.{{@index}}"
+              value="{{id}}"
+              id="karmaWho-{{id}}"
+              data-dtype="String"
+              data-value="{{id}}"
+              {{checked karma}}
+              hidden
+            />
+            <label
+              class="{{checked karma}}"
+              for="karmaWho-{{id}}"
+            >{{name}}</label>
+          </div>
+        {{/each}}
+      </div>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>{{localize "KARMA.Form.Dice"}}</legend>
+    {{formGroup
+      inputs.dice
+      name="dice"
+      label=(localize "KARMA.Form.Faces.label")
+      hint=(localize "KARMA.Form.Faces.hint")
+    }}
+    {{formGroup
+      inputs.inequality
+      name="inequality"
+      label=(localize "KARMA.Form.Inequality.label")
+      hint=(localize "KARMA.Form.Inequality.hint")
+      value=karma.inequality
+      options=inequalityOptions
+      localize=true
+    }}
+  </fieldset>
+  <fieldset>
+    <legend>{{localize "KARMA.Karma"}}</legend>
+    <div class="form-group">
+      <label>{{localize "KARMA.Form.Type"}}</label>
+      <div class="form-fields">
+        <div class="form-fields">
+          <select name="type">
+            {{selectOptions types selected=karma.type}}
+          </select>
+        </div>
+      </div>
+    </div>
+    {{formGroup
+      inputs.history
+      name="history"
+      label=(localize "KARMA.Form.History.label")
+      hint=(localize
+        (concat "KARMA.Form.History.hint." karma.type) number=karma.history
+      )
+    }}
+    {{formGroup
+      inputs.threshold
+      name="threshold"
+      label=(localize "KARMA.Form.Threshold.label")
+    }}
+    {{#if (eq karma.type "simple")}}
+      {{formGroup
+        inputs.floor
+        name="floor"
+        label=(localize "KARMA.Form.Floor.label")
+        hint=(localize "KARMA.Form.Floor.hint" number=karma.floor)
+      }}
+    {{/if}}
 
-		{{#if (eq karma.type "average")}}
-			{{formGroup inputs.nudge name="nudge" label=(localize "KARMA.Form.Nudge.label")}}
-			{{formGroup
-				inputs.cumulative
-				name="cumulative"
-				label=(localize "KARMA.Form.Cumulative.label")
-				hint=(localize "KARMA.Form.Cumulative.hint")
-				value=karma.cumulative
-			}}
-		{{/if}}
-	</fieldset>
-</form>
+    {{#if (eq karma.type "average")}}
+      {{formGroup
+        inputs.nudge
+        name="nudge"
+        label=(localize "KARMA.Form.Nudge.label")
+      }}
+      {{formGroup
+        inputs.cumulative
+        name="cumulative"
+        label=(localize "KARMA.Form.Cumulative.label")
+        hint=(localize "KARMA.Form.Cumulative.hint")
+        value=karma.cumulative
+      }}
+    {{/if}}
+  </fieldset>
+</div>

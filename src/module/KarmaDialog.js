@@ -1,25 +1,45 @@
 import { DiceField, DiceNumberField } from "./KarmaData.js";
 
-export class KarmaApp extends FormApplication {
-	static get defaultOptions() {
-		return foundry.utils.mergeObject(super.defaultOptions, {
-			id: "karma-config",
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
+	static DEFAULT_OPTIONS = {
+		id: "karma-config",
+		actions: {
+			markUsers: KarmaApp.markUsers,
+		},
+		form: {
+			handler: KarmaApp.#onSubmit,
 			closeOnSubmit: false,
 			submitOnChange: true,
 			submitOnClose: true,
-			editable: game.user.isGM,
+		},
+		position: {
 			width: 500,
 			height: "auto",
-			template: "modules/karma/templates/karma-config.hbs",
+		},
+		tag: "form",
+		window: {
+			contentClasses: ["karma-config", "standard-form"],
+			icon: "fas fa-praying-hands",
 			title: "KARMA.Form.title",
-		});
-	}
+		},
+	};
 
-	async getData() {
+	static PARTS = {
+		form: {
+			template: "modules/karma/templates/karma-config.hbs",
+		},
+	};
+
+	_prepareContext() {
 		const karma = game.settings.get("karma", "config");
 		const translation =
 			game.i18n.translations?.KARMA?.Form?.Inequality?.options
 				?? game.i18n._fallback?.KARMA?.Form?.Inequality?.options;
+		const gms = this.constructor.getUsers({ gm: true });
+		const players = this.constructor.getUsers();
+		const allGms = gms.every((gm) => gm.karma);
+		const allPlayers = players.every((p) => p.karma);
 		return {
 			karma,
 			inputs: this._getInputs(karma),
@@ -31,8 +51,10 @@ export class KarmaApp extends FormApplication {
 				simple: "Simple",
 				average: "Average",
 			},
-			whoGmOptions: this.constructor.getUsers({ gm: true }),
-			whoUserOptions: this.constructor.getUsers(),
+			gms,
+			players,
+			allGms,
+			allPlayers
 		};
 	}
 
@@ -74,6 +96,15 @@ export class KarmaApp extends FormApplication {
 		};
 	}
 
+	static markUsers(event, target) {
+		const checked = !target.classList.contains("checked");
+		target.classList.toggle("checked", checked);
+		for (const element of target.closest(".form-group").querySelectorAll(".karma-checkbox:has(input)")) {
+			element.querySelector("input").setAttribute("checked", checked);
+			element.querySelector("label").classList.toggle("checked", checked);
+		}
+	}
+
 	/**
 	 *Return an array of all users (map of id and name), defaulting to ones currently active
 	 */
@@ -88,8 +119,8 @@ export class KarmaApp extends FormApplication {
 			}));
 	}
 
-	async _updateObject(event, formData) {
-		const expandForm = foundry.utils.expandObject(formData);
+	static async #onSubmit(event, form, formData) {
+		const expandForm = foundry.utils.expandObject(formData.object);
 		const users = [...Object.values(expandForm?.gms ?? {}), ...Object.values(expandForm?.players ?? {})].filter(
 			Boolean
 		);
