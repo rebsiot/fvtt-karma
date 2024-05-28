@@ -61,11 +61,18 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 	_getInputs(karma) {
 		const max = karma.dice;
 		const { fields } = foundry.data;
+		const choices = ["≤", "<", "≥", ">"];
+		const opposite = {
+			"≤": ">",
+			"<": "≥",
+			"≥": "<",
+			">": "≤"
+		}[karma.inequality];
 		return {
 			dice: new DiceField({ initial: karma.dice }),
 			inequality: new fields.StringField({
 				initial: karma.inequality,
-				choices: ["≤", "<", "≥", ">"],
+				choices,
 				required: true,
 			}),
 			history: new DiceNumberField({ initial: karma.history, min: 2, max: 15 }),
@@ -90,8 +97,8 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 						number3: karma.nudge * 3,
 					}) : "",
 					term: game.i18n.localize(
-						`KARMA.Form.Terms.${["≤", "<"].includes(karma.inequality) ? "greater" : "less"}`
-					),
+						`KARMA.Form.Inequality.options.${opposite}`
+					).toLowerCase(),
 				}),
 			}),
 			cumulative: new fields.BooleanField({ initial: karma.cumulative }),

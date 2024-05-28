@@ -56,16 +56,12 @@
       },
       "Nudge": {
         "label": "Next Roll Adjustment",
-        "hint": "...the next die roll and each subsequent roll will be adjusted by {number}{cumulatively}, until the average is {term} or equal than {threshold}.",
+        "hint": "...the next die roll and each subsequent roll will be adjusted by {number}{cumulatively}, until the average is {term} {threshold}.",
         "cumulatively": " cumulatively ({number}, {number2}, {number3}...)"
       },
       "Cumulative": {
         "label": "Cumulative Adjustment",
         "hint": "Sets if the adjusment will accumulate on subsequent rolls."
-      },
-      "Terms": {
-        "greater": "greater",
-        "less": "less"
       }
     }
   }
