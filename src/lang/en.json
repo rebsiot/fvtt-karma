@@ -7,10 +7,6 @@
         "label": "Open Karma Configuration",
         "hint": "Configure the configurations for Karma."
       },
-      "showChatControlIcon": {
-        "label": "Chat Icon",
-        "hint": "Displays the icon above the chat box."
-      },
       "showChatMessageIcon": {
         "label": "Message Icon",
         "hint": "Displays the icon on chat messages that got changed by the karma."

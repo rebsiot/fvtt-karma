@@ -1,7 +1,7 @@
 {
 	"id": "karma",
 	"title": "Karmic Dice",
-	"description": "Bad luck protection for dice rolls.",
+	"description": "Bad luck protection for dice rolls through karma.",
 	"authors": [
 		{
 			"name": "Matheus Clemente",
@@ -26,8 +26,8 @@
 		}
 	],
 	"compatibility": {
-		"minimum": 12,
-		"verified": 12
+		"minimum": 13,
+		"verified": 13
 	},
 	"url": "This is auto replaced",
 	"version": "This is auto replaced",

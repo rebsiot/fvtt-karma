@@ -32,25 +32,13 @@ Hooks.once("init", () => {
 		},
 	});
 
-	game.settings.register("karma", "showChatControlIcon", {
-		name: "KARMA.Settings.showChatControlIcon.label",
-		hint: "KARMA.Settings.showChatControlIcon.hint",
-		scope: "world",
-		config: true,
-		type: Boolean,
-		default: true,
-		onChange: (value) => {
-			document.getElementById("karma-icon")?.classList.toggle("hidden", !value);
-		},
-	});
-
 	game.settings.register("karma", "showChatMessageIcon", {
 		name: "KARMA.Settings.showChatMessageIcon.label",
 		hint: "KARMA.Settings.showChatMessageIcon.hint",
 		scope: "world",
 		config: true,
 		type: Boolean,
-		default: true,
+		default: false,
 		onChange: (value) => {
 			game.messages.contents
 				.slice(-100)
@@ -66,20 +54,6 @@ Hooks.once("init", () => {
 		},
 		restricted: true,
 	});
-});
-
-Hooks.on("renderChatLog", (app, html) => {
-	if (!game.user.isGM) return;
-	const karmaButton = document.createElement("label");
-	karmaButton.classList.add("karma-icon");
-	karmaButton.innerHTML =
-		'<a data-tooltip="Karma" role="button"><i id="karma-icon" class="fas fa-praying-hands"></i></a>';
-	karmaButton.addEventListener("click", (ev) => new KarmaApp().render(true));
-
-	html.find(".chat-control-icon").after(karmaButton);
-	const karmaIcon = document.getElementById("karma-icon");
-	karmaIcon?.classList.toggle("active", game.settings.get("karma", "config").enabled);
-	karmaIcon?.classList.toggle("hidden", !game.settings.get("karma", "showChatControlIcon"));
 });
 
 Hooks.on("renderChatMessage", (message, html, data) => {
