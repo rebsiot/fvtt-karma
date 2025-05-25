@@ -17,16 +17,6 @@ Hooks.once("init", () => {
 		scope: "world",
 		config: false,
 		type: KarmaData,
-		default: {
-			enabled: false,
-			dice: 20,
-			inequality: "≤",
-			history: 2,
-			threshold: 7,
-			floor: 13,
-			nudge: 5,
-			cumulative: false,
-		},
 		onChange: (value) => {
 			document.getElementById("karma-icon")?.classList.toggle("active", value.enabled);
 		},
