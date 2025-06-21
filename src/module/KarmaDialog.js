@@ -134,7 +134,7 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		this.tabGroups.main = String(this.karma.length);
 		const name = game.i18n.localize("KARMA.Form.NewKarma");
 		this.karma.push({
-			...game.settings.settings.get("karma.config").default[0],
+			...game.settings.settings.get("karma.configs").default[0],
 			name,
 			id: foundry.utils.randomID(16)
 		});
@@ -170,7 +170,7 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			karma.allPlayers = players.every(([id, bool]) => bool);
 			const users = Object.fromEntries([...gms, ...players]);
 
-			const { floor, nudge, cumulative } = game.settings.settings.get("karma.config").default[0];
+			const { floor, nudge, cumulative } = game.settings.settings.get("karma.configs").default[0];
 			config.push({ floor, nudge, cumulative, users, ...karma });
 		});
 		this.karma = config;

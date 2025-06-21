@@ -39,7 +39,7 @@
           "≤": "Less than or equal to",
           "<": "Less than",
           "≥": "Greater than or equal to",
-          ">": "Greater then"
+          ">": "Greater than"
         }
       },
       "History": {
@@ -54,11 +54,11 @@
         "hint": "...{term} {number}, then..."
       },
       "Floor": {
-        "label": "Next Roll Floor",
+        "label": "Floor",
         "hint": "...the next die roll will be {number} or higher."
       },
       "Nudge": {
-        "label": "Next Roll Adjustment",
+        "label": "Adjustment",
         "hint": "...the next die roll and each subsequent roll will be adjusted by {number}{cumulatively}, until the average is {term} {threshold}.",
         "cumulatively": " cumulatively ({number}, {number2}, {number3}...)"
       },

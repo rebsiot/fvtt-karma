@@ -21,6 +21,7 @@
 			{{formGroup
 				@root.fields.threshold
 				value=karma.threshold
+				classes="threshold"
 				name=(concat tab.id ".threshold")
 				hint=(localize "KARMA.Form.Threshold.hint" term=(localize (concat "KARMA.Form.Inequality.options." karma.inequality)) number=karma.threshold)
 				max=karma.dice
