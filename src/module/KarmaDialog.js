@@ -1,10 +1,12 @@
-import { DiceField, DiceNumberField } from "./KarmaData.js";
+import { KarmaData } from "./KarmaData.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 	static DEFAULT_OPTIONS = {
 		id: "karma-config",
 		actions: {
+			addKarma: KarmaApp.addKarma,
+			deleteKarma: KarmaApp.deleteKarma,
 			markUsers: KarmaApp.markUsers,
 		},
 		form: {
@@ -14,7 +16,7 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			submitOnClose: true,
 		},
 		position: {
-			width: 500,
+			width: 600,
 			height: "auto",
 		},
 		tag: "form",
@@ -26,82 +28,55 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 	};
 
 	static PARTS = {
-		form: {
-			template: "modules/karma/templates/karma-config.hbs",
-		},
+		tabs: { template: "templates/generic/tab-navigation.hbs" },
+		form: { template: "modules/karma/templates/karma-config.hbs" },
+		buttons: { template: "templates/generic/form-footer.hbs" }
 	};
 
-	_prepareContext() {
-		const karma = game.settings.get("karma", "config");
-		const translation =
-			game.i18n.translations?.KARMA?.Form?.Inequality?.options
-				?? game.i18n._fallback?.KARMA?.Form?.Inequality?.options;
-		const gms = this.constructor.getUsers({ gm: true });
-		const players = this.constructor.getUsers();
-		const allGms = gms.every((gm) => gm.karma);
-		const allPlayers = players.every((p) => p.karma);
-		return {
-			karma,
-			inputs: this._getInputs(karma),
-			inequalityOptions: Object.entries(translation).map(([key, value]) => ({
-				value: key,
-				label: value,
-			})),
-			types: {
-				simple: "Simple",
-				average: "Average",
-			},
-			gms,
-			players,
-			allGms,
-			allPlayers
-		};
+	_karma;
+
+	get karma() {
+		return this._karma ??= foundry.utils.deepClone(game.settings.get("karma", "configs"));
 	}
 
-	_getInputs(karma) {
-		const max = karma.dice;
-		const { fields } = foundry.data;
-		const choices = ["≤", "<", "≥", ">"];
-		const opposite = {
-			"≤": ">",
-			"<": "≥",
-			"≥": "<",
-			">": "≤"
-		}[karma.inequality];
+	set karma(value) {
+		this._karma = value;
+	}
+
+	tabGroups = {
+		main: "0",
+		...this.karma.reduce((types, _, index) => {
+			types[index] = "basics";
+			return types;
+		}, {})
+	};
+
+	#prepareTabs() {
+		return this.karma.reduce((tabs, tabData, index) => {
+			const active = this.tabGroups.main === String(index);
+			tabs[index] = {
+				id: index,
+				group: "main",
+				label: tabData.name,
+				active,
+				cssClass: active ? "active" : "",
+				data: tabData
+			};
+			return tabs;
+		}, {});
+	}
+
+	_prepareContext() {
+		this.karma.forEach((k) => this.getUsers(k));
 		return {
-			dice: new DiceField({ initial: karma.dice }),
-			inequality: new fields.StringField({
-				initial: karma.inequality,
-				choices,
-				required: true,
-			}),
-			history: new DiceNumberField({ initial: karma.history, min: 2, max: 15 }),
-			threshold: new DiceNumberField({
-				initial: karma.threshold,
-				max,
-				hint: game.i18n.format("KARMA.Form.Threshold.hint", {
-					number: karma.threshold,
-					term: game.i18n.localize(`KARMA.Form.Inequality.options.${karma.inequality}`).toLowerCase(),
-				}),
-			}),
-			floor: new DiceNumberField({ initial: karma.floor, max }),
-			nudge: new DiceNumberField({
-				initial: karma.nudge,
-				max,
-				hint: game.i18n.format("KARMA.Form.Nudge.hint", {
-					number: karma.nudge,
-					threshold: karma.threshold,
-					cumulatively: karma.cumulative ? game.i18n.format("KARMA.Form.Nudge.cumulatively", {
-						number: karma.nudge,
-						number2: karma.nudge * 2,
-						number3: karma.nudge * 3,
-					}) : "",
-					term: game.i18n.localize(
-						`KARMA.Form.Inequality.options.${opposite}`
-					).toLowerCase(),
-				}),
-			}),
-			cumulative: new fields.BooleanField({ initial: karma.cumulative }),
+			tabs: this.#prepareTabs(),
+			verticalTabs: true,
+			fields: KarmaData.schema.fields,
+			karma: this.karma,
+			buttons: [
+				{ type: "submit", icon: "fa-solid fa-save", label: "SETTINGS.Save" },
+				{ type: "button", action: "deleteKarma", icon: "fa-solid fa-trash", label: "KARMA.Form.DeleteKarma" },
+			]
 		};
 	}
 
@@ -118,38 +93,91 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 	/**
 	 *Return an array of all users (map of id and name), defaulting to ones currently active
 	 */
-	static getUsers({ activeOnly = false, gm = false } = {}) {
-		const karmaUsers = game.settings.get("karma", "config").users;
-		return game.users
-			.filter((user) => gm === user.isGM && (!activeOnly || user.active))
-			.map((user) => ({
-				id: user.id,
-				name: user.name,
-				karma: karmaUsers.includes(user.id),
-			}));
+	getUsers(karma, activeOnly = false) {
+		karma.gms = [];
+		karma.players = [];
+		game.users
+			.filter(({ active }) => (!activeOnly || active))
+			.forEach(({ id, name, isGM }) => {
+				if (isGM) {
+					karma.gms.push({
+						id,
+						name: name,
+						active: Boolean(karma.users[id]) || karma.allGms
+					});
+				} else {
+					karma.players.push({
+						id,
+						name: name,
+						active: Boolean(karma.users[id]) || karma.allPlayers
+					});
+				}
+			});
+	}
+
+	_onRender(context, options) {
+		const a = document.createElement("a");
+		a.dataset.action = "addKarma";
+		a.dataset.tab = "";
+		const span = document.createElement("span");
+		const i = document.createElement("i");
+		i.className = "far fa-plus";
+		span.append(i);
+		span.innerText = game.i18n.localize("KARMA.Form.AddNewKarma");
+		a.append(span);
+
+		this.element.querySelector(".sheet-tabs").append(a);
+	}
+
+	static async addKarma(event) {
+		event.preventDefault();
+		this.tabGroups.main = String(this.karma.length);
+		const name = game.i18n.localize("KARMA.Form.NewKarma");
+		this.karma.push({
+			...game.settings.settings.get("karma.config").default[0],
+			name,
+			id: foundry.utils.randomID(16)
+		});
+		this.render();
+	}
+
+	static async deleteKarma(event) {
+		event.preventDefault();
+		this.karma.splice(Number(this.tabGroups.main), 1);
+		this.tabGroups.main = String(Number(this.tabGroups.main) - 1);
+		this.render();
+	}
+
+	_onChangeForm(formConfig, event) {
+		const target = event.target;
+		const [id, name] = target.name.split(".");
+		if (name === "dice") {
+			["thresold", "floor", "nudge"].forEach((field) => {
+				if (!Number.between(target.value, 1, this.karma[id][field])) this.karma[id][field] = target.value;
+			});
+
+		}
+		super._onChangeForm(formConfig, event);
 	}
 
 	static async #onSubmit(event, form, formData) {
 		const expandForm = foundry.utils.expandObject(formData.object);
-		const users = [...Object.values(expandForm?.gms ?? {}), ...Object.values(expandForm?.players ?? {})].filter(
-			Boolean
-		);
+		const config = [];
+		Object.entries(expandForm).forEach(([id, karma]) => {
+			const gms = Object.entries(karma?.gms ?? {});
+			const players = Object.entries(karma?.players ?? {});
+			karma.allGms = gms.every(([id, bool]) => bool);
+			karma.allPlayers = players.every(([id, bool]) => bool);
+			const users = Object.fromEntries([...gms, ...players]);
 
-		const original = game.settings.get("karma", "config");
-		await game.settings.set(
-			"karma",
-			"config",
-			foundry.utils.mergeObject(
-				{
-					floor: formData.floor ?? original.floor,
-					nudge: formData.nudge ?? original.nudge,
-					cumulative: formData.cumulative ?? original.cumulative,
-					users,
-				},
-				expandForm
-			)
-		);
-		if (event.type === "submit") this.close();
-		else this.render();
+			const { floor, nudge, cumulative } = game.settings.settings.get("karma.config").default[0];
+			config.push({ floor, nudge, cumulative, users, ...karma });
+		});
+		this.karma = config;
+
+		if (event.type === "submit") {
+			await game.settings.set("karma", "configs", this.karma);
+			this.close();
+		} else this.render();
 	}
 }

@@ -2,22 +2,56 @@ export class KarmaData extends foundry.abstract.DataModel {
 	static defineSchema() {
 		const { fields } = foundry.data;
 		return {
-			enabled: new fields.BooleanField(),
-			type: new fields.StringField({ initial: "simple", choices: ["simple", "average"] }),
-			dice: new DiceField(),
-			inequality: new fields.StringField({
-				initial: "≤",
-				choices: ["≤", "<", "≥", ">"],
+			id: new fields.DocumentIdField(),
+			enabled: new fields.BooleanField({ label: "KARMA.Form.enabled" }),
+			name: new fields.StringField({ required: true, nullable: false, initial: "New Karma", label: "Name" }),
+			type: new fields.StringField({
 				required: true,
+				initial: "simple",
+				choices: {
+					simple: "KARMA.Form.Type.simple",
+					average: "KARMA.Form.Type.average",
+				},
+				label: "KARMA.Form.Type.label"
 			}),
-			history: new DiceNumberField({ initial: 2, min: 2, max: 15 }),
+			dice: new fields.NumberField({
+				...DICE_DEFAULTS,
+				initial: 20,
+				min: 2,
+				max: 100,
+				label: "KARMA.Form.Faces.label",
+				hint: "KARMA.Form.Faces.hint"
+			}),
+			inequality: new fields.StringField({
+				required: true,
+				initial: "≤",
+				choices: {
+					"≤": "KARMA.Form.Inequality.options.≤",
+					"<": "KARMA.Form.Inequality.options.<",
+					"≥": "KARMA.Form.Inequality.options.≥",
+					">": "KARMA.Form.Inequality.options.>"
+				},
+				label: "KARMA.Form.Inequality.label",
+				hint: "KARMA.Form.Inequality.hint",
+			}),
+			history: new fields.NumberField({
+				...DICE_DEFAULTS,
+				initial: 2,
+				min: 2,
+				max: 15,
+				label: "KARMA.Form.History.label"
+			}),
 			// Exclusive to Simple Karma
-			threshold: new DiceNumberField({ initial: 7 }),
-			floor: new DiceNumberField({ initial: 13 }),
+			threshold: new fields.NumberField({ ...DICE_DEFAULTS, initial: 7, label: "KARMA.Form.Threshold.label" }),
+			floor: new fields.NumberField({ ...DICE_DEFAULTS, initial: 13, label: "KARMA.Form.Floor.label" }),
 			// Exclusive to Average Karma
-			nudge: new DiceNumberField({ initial: 5 }),
-			cumulative: new fields.BooleanField(),
-			users: new fields.ArrayField(new fields.ForeignDocumentField(foundry.documents.BaseUser, { idOnly: true })),
+			nudge: new fields.NumberField({ ...DICE_DEFAULTS, initial: 5, label: "KARMA.Form.Nudge.label" }),
+			cumulative: new fields.BooleanField({ label: "KARMA.Form.Cumulative.label", hint: "KARMA.Form.Cumulative.hint"}),
+			// User Configuration
+			allGms: new fields.BooleanField({ initial: true }),
+			allPlayers: new fields.BooleanField({ initial: true }),
+			users: new fields.TypedObjectField(new fields.BooleanField(),
+				{validateKey: foundry.data.validators.isValidId}),
 		};
 	}
 }
@@ -28,40 +62,3 @@ const DICE_DEFAULTS = {
 	positive: true,
 	required: true,
 };
-
-export class DiceField extends foundry.data.fields.NumberField {
-	static get _defaults() {
-		return foundry.utils.mergeObject(super._defaults, {
-			...DICE_DEFAULTS,
-			initial: 20,
-			min: 2,
-			max: 100,
-		});
-	}
-
-	toFormGroup(groupConfig = {}, inputConfig = {}) {
-		inputConfig.value ??= this.initial;
-		inputConfig.required ??= String(this.required);
-		return super.toFormGroup(groupConfig, inputConfig);
-	}
-}
-
-export class DiceNumberField extends foundry.data.fields.NumberField {
-	initialize(value, model, options = {}) {
-		if (model.dice && (model.dice !== this.max || !this.max)) this.max = model.dice;
-		return super.initialize(value, model, options);
-	}
-
-	static get _defaults() {
-		return foundry.utils.mergeObject(super._defaults, {
-			...DICE_DEFAULTS,
-			min: 1,
-		});
-	}
-
-	toFormGroup(groupConfig = {}, inputConfig = {}) {
-		inputConfig.value ??= this.initial;
-		inputConfig.required ??= String(this.required);
-		return super.toFormGroup(groupConfig, inputConfig);
-	}
-}

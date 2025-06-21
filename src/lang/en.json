@@ -14,13 +14,20 @@
     },
     "Form": {
       "title": "Karma Configuration",
-      "enable": "Enable",
+      "enabled": "Enabled",
       "UserPicker": {
         "title": "Who should be affected by karma?"
       },
       "All": "All",
       "Dice": "Dice",
-      "Type": "Type",
+      "AddNewKarma": "Add New Configuration",
+      "NewKarma": "New Karma",
+      "DeleteKarma": "Deleta Karma",
+      "Type": {
+        "label": "Type",
+        "simple": "Simple",
+        "average": "Average"
+      },
       "Faces": {
         "label": "Faces",
         "hint": "The number of faces of the die."
@@ -56,8 +63,8 @@
         "cumulatively": " cumulatively ({number}, {number2}, {number3}...)"
       },
       "Cumulative": {
-        "label": "Cumulative Adjustment",
-        "hint": "Sets if the adjusment will accumulate on subsequent rolls."
+        "label": "Is Cumulative",
+        "hint": "The adjusment will accumulate on subsequent rolls."
       }
     }
   }

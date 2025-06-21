@@ -1,134 +1,110 @@
 <div>
-  <div class="form-group">
-    <label>{{localize "KARMA.Form.enable"}}</label>
-    <div class="form-fields">
-      <input type="checkbox" name="enabled" {{checked karma.enabled}} />
-    </div>
-  </div>
-  <fieldset class="user-picker">
-    <legend>{{localize "KARMA.Form.UserPicker.title"}}</legend>
-    <div class="flexcol">
-      <div class="form-group flexrow">
-        {{#if (gt gms.length 1)}}
-          <div class="karma-checkbox">
-            <label class="{{checked allGms}}" data-action="markUsers">
-              {{localize "KARMA.Form.All"}}
-            </label>
-          </div>
-        {{/if}}
-        {{#each gms}}
-          <div class="karma-checkbox">
-            <input
-              type="checkbox"
-              name="gms.{{@index}}"
-              value="{{id}}"
-              id="karmaWho-{{id}}"
-              data-dtype="String"
-              data-value="{{id}}"
-              {{checked karma}}
-              hidden
-            />
-            <label
-              class="{{checked karma}}"
-              for="karmaWho-{{id}}"
-            >{{name}}</label>
-          </div>
-        {{/each}}
-      </div>
-      <div class="form-group flexrow">
-        {{#if (gt players.length 1)}}
-          <div class="karma-checkbox">
-            <label class="{{checked allPlayers}}" data-action="markUsers">
-              {{localize "KARMA.Form.All"}}
-            </label>
-          </div>
-        {{/if}}
-        {{#each players}}
-          <div class="karma-checkbox">
-            <input
-              type="checkbox"
-              name="players.{{@index}}"
-              value="{{id}}"
-              id="karmaWho-{{id}}"
-              data-dtype="String"
-              data-value="{{id}}"
-              {{checked karma}}
-              hidden
-            />
-            <label
-              class="{{checked karma}}"
-              for="karmaWho-{{id}}"
-            >{{name}}</label>
-          </div>
-        {{/each}}
-      </div>
-    </div>
-  </fieldset>
-  <fieldset>
-    <legend>{{localize "KARMA.Form.Dice"}}</legend>
-    {{formGroup
-      inputs.dice
-      name="dice"
-      label=(localize "KARMA.Form.Faces.label")
-      hint=(localize "KARMA.Form.Faces.hint")
-    }}
-    {{formGroup
-      inputs.inequality
-      name="inequality"
-      label=(localize "KARMA.Form.Inequality.label")
-      hint=(localize "KARMA.Form.Inequality.hint")
-      value=karma.inequality
-      options=inequalityOptions
-      localize=true
-    }}
-  </fieldset>
-  <fieldset>
-    <legend>{{localize "KARMA.Karma"}}</legend>
-    <div class="form-group">
-      <label>{{localize "KARMA.Form.Type"}}</label>
-      <div class="form-fields">
-        <div class="form-fields">
-          <select name="type">
-            {{selectOptions types selected=karma.type}}
-          </select>
-        </div>
-      </div>
-    </div>
-    {{formGroup
-      inputs.history
-      name="history"
-      label=(localize "KARMA.Form.History.label")
-      hint=(localize
-        (concat "KARMA.Form.History.hint." karma.type) number=karma.history
-      )
-    }}
-    {{formGroup
-      inputs.threshold
-      name="threshold"
-      label=(localize "KARMA.Form.Threshold.label")
-    }}
-    {{#if (eq karma.type "simple")}}
-      {{formGroup
-        inputs.floor
-        name="floor"
-        label=(localize "KARMA.Form.Floor.label")
-        hint=(localize "KARMA.Form.Floor.hint" number=karma.floor)
-      }}
-    {{/if}}
+	{{#each tabs as |tab|}}
+	<section class="tab scrollable {{tab.cssClass}}" data-tab="{{tab.id}}" data-group="{{tab.group}}">
+		{{#with tab.data as |karma|}}
+		<div class="form-group">
+			{{formInput @root.fields.name value=karma.name name=(concat tab.id ".name") localize=true }}
+			{{formGroup @root.fields.enabled value=karma.enabled name=(concat tab.id ".enabled") localize=true }}
+		</div>
+		<fieldset>
+			<legend>{{localize "KARMA.Karma"}}</legend>
+			{{formGroup @root.fields.dice value=karma.dice name=(concat tab.id ".dice") localize=true}}
+			{{formGroup @root.fields.inequality value=karma.inequality name=(concat tab.id ".inequality") localize=true}}
+			{{formGroup @root.fields.type value=karma.type name=(concat tab.id ".type") localize=true}}
+			{{formGroup
+				@root.fields.history
+				value=karma.history
+				name=(concat tab.id ".history")
+				hint=(localize (concat "KARMA.Form.History.hint." karma.type) number=karma.history)
+				localize=true
+			}}
+			{{formGroup
+				@root.fields.threshold
+				value=karma.threshold
+				name=(concat tab.id ".threshold")
+				hint=(localize "KARMA.Form.Threshold.hint" term=(localize (concat "KARMA.Form.Inequality.options." karma.inequality)) number=karma.threshold)
+				max=karma.dice
+				localize=true
+			}}
+			{{#if (eq karma.type "simple")}}
+			{{formGroup
+				@root.fields.floor
+				value=karma.floor
+				name=(concat tab.id ".floor")
+				hint=(localize "KARMA.Form.Floor.hint" number=karma.floor)
+				max=karma.dice
+				localize=true
+			}}
+			{{/if}}
 
-    {{#if (eq karma.type "average")}}
-      {{formGroup
-        inputs.nudge
-        name="nudge"
-        label=(localize "KARMA.Form.Nudge.label")
-      }}
-      {{formGroup
-        inputs.cumulative
-        name="cumulative"
-        label=(localize "KARMA.Form.Cumulative.label")
-        hint=(localize "KARMA.Form.Cumulative.hint")
-        value=karma.cumulative
-      }}
-    {{/if}}
-  </fieldset>
+			{{#if (eq karma.type "average")}}
+			{{formGroup @root.fields.nudge value=karma.nudge name=(concat tab.id ".nudge") max=karma.dice localize=true}}
+			{{formGroup @root.fields.cumulative value=karma.cumulative name=(concat tab.id ".cumulative") localize=true}}
+			{{/if}}
+		</fieldset>
+		<fieldset class="user-picker">
+			<legend>{{localize "KARMA.Form.UserPicker.title"}}</legend>
+			<div class="flexcol">
+				<div class="form-group flexrow">
+					<div class="karma-checkbox">
+						<input
+							type="checkbox"
+							name="{{@tab.id}}.allGms"
+							id="{{@tab.id}}-karmaWho-allGms"
+							{{checked karma.allGms}}
+							hidden
+						/>
+						<label class="{{checked karma.allGms}}" data-action="markUsers" for="{{@tab.id}}-karmaWho-allGms">
+							{{localize "KARMA.Form.All"}}
+						</label>
+					</div>
+					{{#each karma.gms}}
+					<div class="karma-checkbox">
+						<input
+							type="checkbox"
+							name="{{@tab.id}}.gms.{{id}}"
+							id="{{@tab.id}}-karmaWho-{{id}}"
+							data-dtype="String"
+							data-value="{{id}}"
+							{{checked active}}
+							hidden
+						/>
+						<label class="{{checked active}}" for="{{@tab.id}}-karmaWho-{{id}}">{{name}}</label>
+					</div>
+					{{/each}}
+				</div>
+				<hr>
+				<div class="form-group flexrow">
+					<div class="karma-checkbox">
+						<input
+							type="checkbox"
+							name="{{@tab.id}}.allPlayers"
+							id="{{@tab.id}}-karmaWho-allGms"
+							{{checked karma.allPlayers}}
+							hidden
+						/>
+						<label class="{{checked karma.allPlayers}}" data-action="markUsers" for="{{@tab.id}}-karmaWho-allPlayers">
+							{{localize "KARMA.Form.All"}}
+						</label>
+					</div>
+					{{#each karma.players}}
+					<div class="karma-checkbox">
+						<input
+							type="checkbox"
+							name="{{@tab.id}}.players.{{id}}"
+							id="{{@tab.id}}-karmaWho-{{id}}"
+							data-dtype="String"
+							data-value="{{id}}"
+							{{checked active}}
+							hidden
+						/>
+						<label class="{{checked active}}" for="{{@tab.id}}-karmaWho-{{id}}">{{name}}</label>
+					</div>
+					{{/each}}
+				</div>
+			</div>
+		</fieldset>
+		{{/with}}
+	</section>
+	{{/each}}
 </div>
