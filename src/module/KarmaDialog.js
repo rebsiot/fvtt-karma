@@ -148,18 +148,6 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		this.render();
 	}
 
-	_onChangeForm(formConfig, event) {
-		const target = event.target;
-		const [id, name] = target.name.split(".");
-		if (name === "dice") {
-			["thresold", "floor", "nudge"].forEach((field) => {
-				if (!Number.between(target.value, 1, this.karma[id][field])) this.karma[id][field] = target.value;
-			});
-
-		}
-		super._onChangeForm(formConfig, event);
-	}
-
 	static async #onSubmit(event, form, formData) {
 		const expandForm = foundry.utils.expandObject(formData.object);
 		const config = [];
