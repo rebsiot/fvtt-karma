@@ -13,12 +13,21 @@ Hooks.once("init", () => {
 		restricted: true,
 	});
 
-	// V1 setting, not used anymore. Kept to avoid issues.
-	game.settings.register("karma", "config", {
+	game.settings.register("karma", "resetSettings", {
 		scope: "world",
 		config: false,
-		type: KarmaData
+		type: Boolean,
+		default: false
 	});
+
+	if (!game.settings.get("karma", "resetSettings")) {
+		// V1 setting, not used anymore. Kept to avoid issues.
+		game.settings.register("karma", "config", {
+			scope: "world",
+			config: false,
+			type: KarmaData
+		});
+	}
 
 	const { ArrayField, EmbeddedDataField } = foundry.data.fields;
 	game.settings.register("karma", "configs", {
@@ -61,13 +70,6 @@ Hooks.once("init", () => {
 				.filter((m) => m.rolls?.length && m.rolls.find((r) => r.terms.find((t) => t.options.karma)))
 				.forEach((m) => ui.chat.updateMessage(m));
 		},
-	});
-
-	game.settings.register("karma", "resetSettings", {
-		scope: "world",
-		config: false,
-		type: Boolean,
-		default: false
 	});
 
 	game.keybindings.register("karma", "openKarmDialog", {
