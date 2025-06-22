@@ -72,6 +72,16 @@ Hooks.once("init", () => {
 		},
 	});
 
+	game.settings.register("karma", "controlsButton", {
+		name: "KARMA.Settings.controlsButton.label",
+		hint: "KARMA.Settings.controlsButton.hint",
+		scope: "world",
+		config: true,
+		type: Boolean,
+		default: true,
+		onChange: async () => await ui.controls.render({ reset: true }),
+	});
+
 	game.keybindings.register("karma", "openKarmDialog", {
 		name: "KARMA.Settings.KarmaDialog.label",
 		onDown: () => {
@@ -95,6 +105,18 @@ Hooks.once("ready", async () => {
 		}
 		await game.settings.set("karma", "resetSettings", true);
 	}
+});
+
+Hooks.on("getSceneControlButtons", (controls) => {
+	const controlsButton = game.settings.get("karma", "controlsButton");
+	if (!controlsButton) return;
+	controls.tokens.tools.karma = {
+		name: "karma",
+		title: "KARMA.Karma",
+		icon: "fas fa-praying-hands",
+		onChange: () => new KarmaApp().render(true),
+		button: true,
+	};
 });
 
 Hooks.on("renderChatMessage", (message, html, data) => {

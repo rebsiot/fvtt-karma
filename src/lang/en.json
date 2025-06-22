@@ -10,6 +10,10 @@
       "showChatMessageIcon": {
         "label": "Message Icon",
         "hint": "Displays the icon on chat messages that got changed by the karma."
+      },
+      "controlsButton": {
+        "label": "Config Button",
+        "hint": "Adds a button on the Controls bar to open the Karma Configuration. You can also open the configuration by setting a keybinding."
       }
     },
     "Form": {
