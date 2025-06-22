@@ -122,7 +122,7 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 async function wrapDiceTermRoll(wrapped, options) {
 	const karma = game.settings.get("karma", "configs");
 	const roll = await wrapped(options);
-	const validKarma = Object.values(karma).filter(([_, k]) => k.enabled && this.faces === k.dice);
+	const validKarma = karma.filter((k) => k.enabled && this.faces === k.dice);
 	for (const k of validKarma) {
 		const valid = (game.user.isGM && k.allGms) || (!game.user.isGM && k.allPlayers) || k.users[game.user.id];
 		if (!valid) continue;
