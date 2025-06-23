@@ -108,6 +108,7 @@ Hooks.once("ready", async () => {
 });
 
 Hooks.on("getSceneControlButtons", (controls) => {
+	if (!game.user.isGM) return;
 	const controlsButton = game.settings.get("karma", "controlsButton");
 	if (!controlsButton) return;
 	controls.tokens.tools.karma = {
