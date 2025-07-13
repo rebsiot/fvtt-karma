@@ -82,6 +82,15 @@ Hooks.once("init", () => {
 		onChange: async () => await ui.controls.render({ reset: true }),
 	});
 
+	game.settings.register("karma", "hideModule", {
+		name: "KARMA.Settings.hideModule.label",
+		hint: "KARMA.Settings.hideModule.hint",
+		scope: "world",
+		config: true,
+		type: Boolean,
+		default: true,
+	});
+
 	game.keybindings.register("karma", "openKarmDialog", {
 		name: "KARMA.Settings.KarmaDialog.label",
 		onDown: () => {
@@ -104,6 +113,12 @@ Hooks.once("ready", async () => {
 			await user.setFlag("karma", "stats", flag);
 		}
 		await game.settings.set("karma", "resetSettings", true);
+	}
+	if (!game.user.isGM && game.settings.get("karma", "hideModule")) {
+		const karma = game.modules.get("karma");
+		karma._source.title = "libDiceStats";
+		karma._source.description = "";
+		karma._source.url = "";
 	}
 });
 
