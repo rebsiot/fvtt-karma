@@ -21,7 +21,7 @@
 			{{formGroup
 				@root.fields.threshold
 				value=karma.threshold
-				classes="threshold"
+				classes="lowercase-hint"
 				name=(concat tab.id ".threshold")
 				hint=(localize "KARMA.Form.Threshold.hint" term=(localize (concat "KARMA.Form.Inequality.options." karma.inequality)) number=karma.threshold)
 				max=karma.dice
@@ -42,6 +42,7 @@
 			{{formGroup
 				@root.fields.nudge
 				value=karma.nudge
+				classes="lowercase-hint"
 				name=(concat tab.id ".nudge")
 				hint=(localize "KARMA.Form.Nudge.hint" term=(localize (concat "KARMA.Form.Inequality.options." karma.inequality)) number=karma.nudge threshold=karma.threshold)
 				max=karma.dice
