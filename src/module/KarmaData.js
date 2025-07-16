@@ -43,6 +43,8 @@ export class KarmaData extends foundry.abstract.DataModel {
 			}),
 			// Exclusive to Simple Karma
 			threshold: new fields.NumberField({ ...DICE_DEFAULTS, initial: 7, label: "KARMA.Form.Threshold.label" }),
+			// This used to be Floor-only, but now works for Ceiling
+			// TODO rename to "target"
 			floor: new fields.NumberField({ ...DICE_DEFAULTS, initial: 13, label: "KARMA.Form.Floor.label" }),
 			// Exclusive to Average Karma
 			nudge: new fields.NumberField({ ...DICE_DEFAULTS, initial: 5, label: "KARMA.Form.Nudge.label" }),

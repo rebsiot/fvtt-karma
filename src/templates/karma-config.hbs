@@ -33,7 +33,7 @@
 				@root.fields.floor
 				value=karma.floor
 				name=(concat tab.id ".floor")
-				hint=(localize "KARMA.Form.Floor.hint" number=karma.floor)
+				hint=(localize "KARMA.Form.Floor.hint" leastMost=(karma-leastMost karma.inequality) number=karma.floor)
 				max=karma.dice
 				localize=true
 			}}

@@ -98,6 +98,10 @@ Hooks.once("init", () => {
 		},
 		restricted: true,
 	});
+
+	Handlebars.registerHelper("karma-leastMost", function (inequality) {
+		return game.i18n.localize(`KARMA.Form.${["≤", "<"].includes(inequality) ? "least" : "most"}`);
+	});
 });
 
 Hooks.once("ready", async () => {
@@ -188,7 +192,10 @@ async function wrapDiceTermRoll(wrapped, options) {
 				const tempResult = history.findIndex((element) => !comparison(element, k.threshold));
 
 				if (history.length === k.history && tempResult === -1) {
-					while (roll.result < k.floor) {
+					const comparison = ["≤", "<"].includes(k.inequality)
+						? (result) => result < k.floor
+						: (result) => result > k.floor;
+					while (comparison(roll.result)) {
 						roll.result = Math.ceil(CONFIG.Dice.randomUniform() * this.faces);
 					}
 

@@ -31,6 +31,9 @@
       "AddNewKarma": "Add New Configuration",
       "NewKarma": "New Karma",
       "DeleteKarma": "Deleta Karma",
+      "least": "at least",
+      "most": "at most",
+
       "Type": {
         "label": "Type",
         "simple": "Simple",
@@ -62,8 +65,8 @@
         "hint": "...{term} {number}, then..."
       },
       "Floor": {
-        "label": "Floor",
-        "hint": "...the next die roll will be {number} or higher."
+        "label": "Target",
+        "hint": "...the next die roll will be {leastMost} {number}."
       },
       "Nudge": {
         "label": "Adjustment",
