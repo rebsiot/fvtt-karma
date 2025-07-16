@@ -5,6 +5,7 @@
 		<div class="form-group">
 			{{formInput @root.fields.name value=karma.name name=(concat tab.id ".name") localize=true }}
 			{{formGroup @root.fields.enabled value=karma.enabled name=(concat tab.id ".enabled") localize=true }}
+			{{formInput @root.fields.id value=karma.id classes="hidden-input" name=(concat tab.id ".id") }}
 		</div>
 		<fieldset>
 			<legend>{{localize "KARMA.Karma"}}</legend>
