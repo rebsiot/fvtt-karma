@@ -13,6 +13,8 @@ Hooks.once("init", () => {
 		restricted: true,
 	});
 
+	// TODO remove on V14
+	// Used to convert old 1.0 settings to 2.0
 	game.settings.register("karma", "resetSettings", {
 		scope: "world",
 		config: false,
@@ -20,6 +22,7 @@ Hooks.once("init", () => {
 		default: false
 	});
 
+	// TODO remove on V14
 	if (!game.settings.get("karma", "resetSettings")) {
 		// V1 setting, not used anymore. Kept to avoid issues.
 		game.settings.register("karma", "config", {
@@ -105,8 +108,9 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("ready", async () => {
+	// TODO remove on V14
 	if (!game.settings.get("karma", "resetSettings")) {
-		const config = game.settings.get("karma", "configs");
+		const config = game.settings.get("karma", "config");
 		const defaultValue = game.settings.settings.get("karma.configs").default[0];
 		await game.settings.set("karma", "configs", [{ ...defaultValue, ...config }]);
 		for (const user of game.users) {
@@ -192,10 +196,10 @@ async function wrapDiceTermRoll(wrapped, options) {
 				const tempResult = history.findIndex((element) => !comparison(element, k.threshold));
 
 				if (history.length === k.history && tempResult === -1) {
-					const comparison = ["≤", "<"].includes(k.inequality)
+					const compare = ["≤", "<"].includes(k.inequality)
 						? (result) => result < k.floor
 						: (result) => result > k.floor;
-					while (comparison(roll.result)) {
+					while (compare(roll.result)) {
 						roll.result = Math.ceil(CONFIG.Dice.randomUniform() * this.faces);
 					}
 

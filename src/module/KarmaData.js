@@ -2,7 +2,7 @@ export class KarmaData extends foundry.abstract.DataModel {
 	static defineSchema() {
 		const { fields } = foundry.data;
 		return {
-			id: new fields.DocumentIdField(),
+			id: new fields.DocumentIdField({ nullable: false }),
 			enabled: new fields.BooleanField({ label: "KARMA.Form.enabled" }),
 			name: new fields.StringField({ required: true, nullable: false, initial: "New Karma", label: "Name" }),
 			type: new fields.StringField({
@@ -38,7 +38,7 @@ export class KarmaData extends foundry.abstract.DataModel {
 				...DICE_DEFAULTS,
 				initial: 2,
 				min: 2,
-				max: 15,
+				max: 100,
 				label: "KARMA.Form.History.label"
 			}),
 			// Exclusive to Simple Karma
@@ -55,6 +55,12 @@ export class KarmaData extends foundry.abstract.DataModel {
 			users: new fields.TypedObjectField(new fields.BooleanField(),
 				{validateKey: foundry.data.validators.isValidId}),
 		};
+	}
+
+	static migrateData(source) {
+		if (!source.id) {
+			source.id = foundry.utils.randomID(16);
+		}
 	}
 }
 
