@@ -39,7 +39,14 @@
 			{{/if}}
 
 			{{#if (eq karma.type "average")}}
-			{{formGroup @root.fields.nudge value=karma.nudge name=(concat tab.id ".nudge") max=karma.dice localize=true}}
+			{{formGroup
+				@root.fields.nudge
+				value=karma.nudge
+				name=(concat tab.id ".nudge")
+				hint=(localize "KARMA.Form.Nudge.hint" term=(localize (concat "KARMA.Form.Inequality.options." karma.inequality)) number=karma.nudge threshold=karma.threshold)
+				max=karma.dice
+				localize=true
+			}}
 			{{formGroup @root.fields.cumulative value=karma.cumulative name=(concat tab.id ".cumulative") localize=true}}
 			{{/if}}
 		</fieldset>
