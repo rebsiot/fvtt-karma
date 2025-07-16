@@ -17,7 +17,7 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		},
 		position: {
 			width: 600,
-			height: "auto",
+			height: 680,
 		},
 		tag: "form",
 		window: {
