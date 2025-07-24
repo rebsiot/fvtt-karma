@@ -143,12 +143,14 @@ Hooks.on("getSceneControlButtons", (controls) => {
 
 Hooks.on("renderChatMessage", (message, html, data) => {
 	if (!game.user.isGM || !message.rolls?.length || !game.settings.get("karma", "showChatMessageIcon")) return;
-	const terms = message.rolls.find((r) => r.terms.find((t) => t.options.karma))?.terms;
-	if (terms) {
-		const karma = terms.find((t) => t.options.karma).options.karma;
+	const terms = message.rolls.filter((r) => r.terms.some((t) => t.options?.karma));
+	if (terms?.length) {
+		const karma = terms.flatMap((entry) => entry.terms)
+			.map((term) => term.options.karma)
+			.filterJoin("<br>");
 		const button = $(
 			`<span
-			data-tooltip="${karma.join("<br>")}"
+			data-tooltip="${karma}"
 			data-tooltip-direction="LEFT">
 				<i class="fas fa-praying-hands"></i>
 			</span>`
