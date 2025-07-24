@@ -21,11 +21,11 @@
 		<fieldset>
 			<legend>{{localize "KARMA.Karma"}}</legend>
 			{{formGroup @root.fields.dice value=karma.dice name=(concat tab.id ".dice") localize=true}}
-			{{formGroup @root.fields.inequality value=karma.inequality name=(concat tab.id ".inequality") localize=true}}
 			{{formGroup @root.fields.type value=karma.type name=(concat tab.id ".type") localize=true}}
 
 			{{#if (eq karma.type "fudge")}}
 			{{formInput @root.fields.history value=karma.history classes="hidden-input" name=(concat tab.id ".history") }}
+			{{formGroup @root.fields.inequality value=karma.inequality name=(concat tab.id ".inequality") localize=true}}
 			{{formInput @root.fields.threshold value=karma.threshold classes="hidden-input" name=(concat tab.id ".threshold") }}
 			{{else}}
 			{{formGroup
@@ -35,6 +35,7 @@
 				hint=(localize (concat "KARMA.Form.History.hint." karma.type) number=karma.history)
 				localize=true
 			}}
+			{{formGroup @root.fields.inequality value=karma.inequality name=(concat tab.id ".inequality") localize=true}}
 			{{formGroup
 				@root.fields.threshold
 				value=karma.threshold

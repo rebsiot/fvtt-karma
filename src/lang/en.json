@@ -46,7 +46,7 @@
         "hint": "The number of faces of the die."
       },
       "Inequality": {
-        "label": "Inequality",
+        "label": "Comparison",
         "hint": "Trigger for the karma, based on the given inequality.",
         "options": {
           "≤": "Less than or equal to",

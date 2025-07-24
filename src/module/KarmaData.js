@@ -27,8 +27,7 @@ export class KarmaData extends foundry.abstract.DataModel {
 					"≥": "KARMA.Form.Inequality.options.≥",
 					">": "KARMA.Form.Inequality.options.>"
 				},
-				label: "KARMA.Form.Inequality.label",
-				hint: "KARMA.Form.Inequality.hint",
+				label: "KARMA.Form.Inequality.label"
 			}),
 			history: requiredInt({ initial: 2, min: 2, max: 100, label: "KARMA.Form.History.label" }),
 			// Exclusive to Simple Karma
