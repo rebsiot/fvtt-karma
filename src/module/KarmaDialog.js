@@ -91,7 +91,6 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			element.querySelector("input").checked = checked;
 			element.querySelector("label").classList.toggle("checked", checked);
 		}
-		// this.element.dispatchEvent(new Event("change"));
 	}
 
 	/**
