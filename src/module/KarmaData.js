@@ -1,9 +1,11 @@
+const { fields } = foundry.data;
+
 export class KarmaData extends foundry.abstract.DataModel {
 	static defineSchema() {
-		const { fields } = foundry.data;
 		return {
 			id: new fields.DocumentIdField({ nullable: false }),
 			enabled: new fields.BooleanField({ label: "KARMA.Form.enabled" }),
+			recurring: new fields.BooleanField({ initial: true, label: "KARMA.Form.Recurring.label", hint: "KARMA.Form.Recurring.hint" }),
 			name: new fields.StringField({ required: true, nullable: false, initial: "New Karma", label: "Name" }),
 			type: new fields.StringField({
 				required: true,
@@ -11,17 +13,11 @@ export class KarmaData extends foundry.abstract.DataModel {
 				choices: {
 					simple: "KARMA.Form.Type.simple",
 					average: "KARMA.Form.Type.average",
+					fudge: "KARMA.Form.Type.fudge"
 				},
 				label: "KARMA.Form.Type.label"
 			}),
-			dice: new fields.NumberField({
-				...DICE_DEFAULTS,
-				initial: 20,
-				min: 2,
-				max: 100,
-				label: "KARMA.Form.Faces.label",
-				hint: "KARMA.Form.Faces.hint"
-			}),
+			dice: requiredInt({ initial: 20, min: 2, max: 100, label: "KARMA.Form.Faces.label" }),
 			inequality: new fields.StringField({
 				required: true,
 				initial: "≤",
@@ -34,21 +30,15 @@ export class KarmaData extends foundry.abstract.DataModel {
 				label: "KARMA.Form.Inequality.label",
 				hint: "KARMA.Form.Inequality.hint",
 			}),
-			history: new fields.NumberField({
-				...DICE_DEFAULTS,
-				initial: 2,
-				min: 2,
-				max: 100,
-				label: "KARMA.Form.History.label"
-			}),
+			history: requiredInt({ initial: 2, min: 2, max: 100, label: "KARMA.Form.History.label" }),
 			// Exclusive to Simple Karma
-			threshold: new fields.NumberField({ ...DICE_DEFAULTS, initial: 7, label: "KARMA.Form.Threshold.label" }),
+			threshold: requiredInt({ initial: 7, label: "KARMA.Form.Threshold.label" }),
 			// This used to be Floor-only, but now works for Ceiling
 			// TODO rename to "target"
-			floor: new fields.NumberField({ ...DICE_DEFAULTS, initial: 13, label: "KARMA.Form.Floor.label" }),
+			floor: requiredInt({ initial: 13, label: "KARMA.Form.Floor.label" }),
 			// Exclusive to Average Karma
-			nudge: new fields.NumberField({ ...DICE_DEFAULTS, initial: 5, label: "KARMA.Form.Nudge.label" }),
-			cumulative: new fields.BooleanField({ label: "KARMA.Form.Cumulative.label", hint: "KARMA.Form.Cumulative.hint"}),
+			nudge: requiredInt({initial: 5, label: "KARMA.Form.Nudge.label" }),
+			cumulative: new fields.BooleanField({ label: "KARMA.Form.Cumulative.label", hint: "KARMA.Form.Cumulative.hint" }),
 			// User Configuration
 			allGms: new fields.BooleanField({ initial: true }),
 			allPlayers: new fields.BooleanField({ initial: true }),
@@ -64,9 +54,12 @@ export class KarmaData extends foundry.abstract.DataModel {
 	}
 }
 
-const DICE_DEFAULTS = {
-	integer: true,
-	nullable: false,
-	positive: true,
-	required: true,
-};
+function requiredInt(config) {
+	return new fields.NumberField({
+		integer: true,
+		nullable: false,
+		positive: true,
+		required: true,
+		...config
+	});
+}

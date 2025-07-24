@@ -23,6 +23,11 @@
 			{{formGroup @root.fields.dice value=karma.dice name=(concat tab.id ".dice") localize=true}}
 			{{formGroup @root.fields.inequality value=karma.inequality name=(concat tab.id ".inequality") localize=true}}
 			{{formGroup @root.fields.type value=karma.type name=(concat tab.id ".type") localize=true}}
+
+			{{#if (eq karma.type "fudge")}}
+			{{formInput @root.fields.history value=karma.history classes="hidden-input" name=(concat tab.id ".history") }}
+			{{formInput @root.fields.threshold value=karma.threshold classes="hidden-input" name=(concat tab.id ".threshold") }}
+			{{else}}
 			{{formGroup
 				@root.fields.history
 				value=karma.history
@@ -39,15 +44,20 @@
 				max=karma.dice
 				localize=true
 			}}
-			{{#if (eq karma.type "simple")}}
+			{{/if}}
+
+			{{#if (or (eq karma.type "simple") (eq karma.type "fudge"))}}
 			{{formGroup
 				@root.fields.floor
 				value=karma.floor
 				name=(concat tab.id ".floor")
-				hint=(localize "KARMA.Form.Floor.hint" leastMost=(karma-leastMost karma.inequality) number=karma.floor)
+				hint=(localize karma.localization.floor.hint leastMost=(karma-leastMost karma.inequality) number=karma.floor)
 				max=karma.dice
 				localize=true
 			}}
+			{{/if}}
+			{{#if (eq karma.type "fudge")}}
+			{{formGroup @root.fields.recurring value=karma.recurring name=(concat tab.id ".recurring") localize=true}}
 			{{/if}}
 
 			{{#if (eq karma.type "average")}}
@@ -56,11 +66,17 @@
 				value=karma.nudge
 				classes="lowercase-hint"
 				name=(concat tab.id ".nudge")
-				hint=(localize "KARMA.Form.Nudge.hint" term=(localize (concat "KARMA.Form.Inequality.options." karma.inequality)) number=karma.nudge threshold=karma.threshold)
+				hint=(localize "KARMA.Form.Nudge.hint" number=karma.nudge threshold=karma.threshold)
 				max=karma.dice
 				localize=true
 			}}
-			{{formGroup @root.fields.cumulative value=karma.cumulative name=(concat tab.id ".cumulative") localize=true}}
+			{{formGroup
+				@root.fields.cumulative
+				value=karma.cumulative
+				name=(concat tab.id ".cumulative")
+				hint=(localize "KARMA.Form.Cumulative.hint" number=karma.nudge)
+				localize=true
+			}}
 			{{/if}}
 		</fieldset>
 		<fieldset class="user-picker">

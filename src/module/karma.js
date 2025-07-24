@@ -105,6 +105,12 @@ Hooks.once("init", () => {
 	Handlebars.registerHelper("karma-leastMost", function (inequality) {
 		return game.i18n.localize(`KARMA.Form.${["≤", "<"].includes(inequality) ? "least" : "most"}`);
 	});
+
+	CONFIG.queries["karma-disable-fudge"] = async ({ id }) => {
+		const settings = foundry.utils.deepClone(game.settings.get("karma", "configs"));
+		settings.find((k) => k.id === id).enabled = false;
+		await game.settings.set("karma", "configs", settings);
+	};
 });
 
 Hooks.once("ready", async () => {
@@ -159,6 +165,12 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 	}
 });
 
+function clampHistory(history, karma) {
+	if (history.length > karma.history) {
+		history.splice(0, history.length - karma.history);
+	}
+}
+
 /**
  * Wrapper for raw dice
  * @param {function} wrapped
@@ -176,13 +188,11 @@ async function wrapDiceTermRoll(wrapped, options) {
 		if (!userKarma[k.id]) userKarma[k.id] = { history: [], cumulative: 0 };
 		const history = userKarma[k.id].history;
 		history.push(roll.result);
-		while (history.length > k.history) {
-			history.shift();
-		}
+		clampHistory(history, k);
 
 		if (!options.maximize && !options.minimize) {
 			const oldRoll = roll.result;
-			const comparison = (v1, v2) => {
+			const ineqCheck = (v1, v2) => {
 				switch (k.inequality) {
 					case "≤":
 						return v1 <= v2;
@@ -194,23 +204,24 @@ async function wrapDiceTermRoll(wrapped, options) {
 						return v1 > v2;
 				}
 			};
+			const floorCheck = ["≤", "<"].includes(k.inequality)
+				? (result) => result < k.floor
+				: (result) => result > k.floor;
 			if (k.type === "simple") {
-				const tempResult = history.findIndex((element) => !comparison(element, k.threshold));
+				const tempResult = history.findIndex((element) => !ineqCheck(element, k.threshold));
 
 				if (history.length === k.history && tempResult === -1) {
-					const compare = ["≤", "<"].includes(k.inequality)
-						? (result) => result < k.floor
-						: (result) => result > k.floor;
-					while (compare(roll.result)) {
+					while (floorCheck(roll.result)) {
 						roll.result = Math.ceil(CONFIG.Dice.randomUniform() * this.faces);
 					}
 
 					history.push(roll.result);
 				}
+				clampHistory(history, k);
 			} else if (k.type === "average") {
 				const tempResult = history.reduce((a, b) => a + b, 0) / history.length;
 
-				if (history.length === k.history && comparison(tempResult, k.threshold)) {
+				if (history.length === k.history && ineqCheck(tempResult, k.threshold)) {
 					if (k.cumulative) userKarma[k.id].cumulative += 1;
 					else userKarma[k.id].cumulative = 1;
 
@@ -221,9 +232,17 @@ async function wrapDiceTermRoll(wrapped, options) {
 
 					history.push(roll.result);
 				} else userKarma[k.id].cumulative = 0;
-			}
-			while (history.length > k.history) {
-				history.shift();
+				clampHistory(history, k);
+			} else if (k.type === "fudge") {
+				if (floorCheck(roll.result)) {
+					while (floorCheck(roll.result)) {
+						roll.result = Math.ceil(CONFIG.Dice.randomUniform() * this.faces);
+					}
+
+					if (!k.recurring) {
+						await game.users.activeGM.query("karma-disable-fudge", { id: k.id });
+					}
+				}
 			}
 			if (oldRoll !== roll.result) {
 				const message = game.i18n.format("KARMA.AdjustRoll", { oldRoll, newRoll: roll.result });

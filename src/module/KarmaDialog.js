@@ -16,8 +16,7 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			submitOnClose: true,
 		},
 		position: {
-			width: 600,
-			height: 680,
+			width: 650
 		},
 		tag: "form",
 		window: {
@@ -54,10 +53,11 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 	#prepareTabs() {
 		return this.karma.reduce((tabs, tabData, index) => {
 			const active = this.tabGroups.main === String(index);
-			const { name, enabled } = tabData;
+			const { name, enabled, recurring, type } = tabData;
 			const cssClass = [];
 			if (enabled) cssClass.push("enabled");
 			if (active) cssClass.push("active");
+			if (type === "fudge" && recurring !== false) cssClass.push("recurring");
 			tabs[index] = {
 				id: index,
 				group: "main",
@@ -71,7 +71,14 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 	}
 
 	_prepareContext() {
-		this.karma.forEach((k) => this.getUsers(k));
+		this.karma.forEach((k) => {
+			this.getUsers(k);
+			k.localization = {
+				floor: {
+					hint: k.type === "fudge" ? "KARMA.Form.Floor.hintFudge" : "KARMA.Form.Floor.hint"
+				}
+			};
+		});
 		return {
 			tabs: this.#prepareTabs(),
 			verticalTabs: true,

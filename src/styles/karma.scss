@@ -26,11 +26,38 @@
       &.enabled {
         color: var(--color-text-secondary);
       }
+
+      &.recurring {
+        span:after {
+          font-family: "Font Awesome 6 Pro";
+          content: " ";
+        }
+        &.enabled {
+          span:after {
+            color: green;
+          }
+          &.active {
+            span:after {
+              text-shadow: 0 0 10px lightgreen;
+            }
+          }
+        }
+      }
     }
+  }
+
+  .tab {
+    gap: 0.25rem;
   }
 
   .hidden-input {
     display: none;
+  }
+
+  .form-fields {
+    &:has(input[type="checkbox"]) {
+      flex: 0;
+    }
   }
 
   .form-group {

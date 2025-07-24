@@ -23,6 +23,7 @@
     "Form": {
       "title": "Karma Configuration",
       "enabled": "Active",
+      "recurring": "Recurring",
       "UserPicker": {
         "title": "Who should be affected by karma?"
       },
@@ -37,15 +38,16 @@
       "Type": {
         "label": "Type",
         "simple": "Simple",
-        "average": "Average"
+        "average": "Average",
+        "fudge": "Fudge"
       },
       "Faces": {
-        "label": "Faces",
+        "label": "Die Faces",
         "hint": "The number of faces of the die."
       },
       "Inequality": {
         "label": "Inequality",
-        "hint": "Sets when the Karma should be triggered, based on the given inequality.",
+        "hint": "Trigger for the karma, based on the given inequality.",
         "options": {
           "≤": "Less than or equal to",
           "<": "Less than",
@@ -66,15 +68,20 @@
       },
       "Floor": {
         "label": "Target",
-        "hint": "...the next die roll will be {leastMost} {number}."
+        "hint": "...the next die roll will be {leastMost} {number}.",
+        "hintFudge": "The next die roll will be {leastMost} {number}"
       },
       "Nudge": {
         "label": "Adjustment",
-        "hint": "...the next die roll and each subsequent roll will be adjusted by {number}, until the average is {term} {threshold}."
+        "hint": "...the next die roll will be adjusted by {number}."
       },
       "Cumulative": {
-        "label": "Is Cumulative",
-        "hint": "The adjusment will accumulate on subsequent rolls."
+        "label": "Cumulative Adjustment",
+        "hint": "Increase the adjusment by 5 on following rolls until the average meets the threshold."
+      },
+      "Recurring": {
+        "label": "Recurring",
+        "hint": "This fudge should not deactivate once it gets triggered."
       }
     }
   }
