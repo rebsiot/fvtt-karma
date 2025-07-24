@@ -22,7 +22,7 @@
     },
     "Form": {
       "title": "Karma Configuration",
-      "enabled": "Enabled",
+      "enabled": "Active",
       "UserPicker": {
         "title": "Who should be affected by karma?"
       },

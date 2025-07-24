@@ -54,12 +54,16 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 	#prepareTabs() {
 		return this.karma.reduce((tabs, tabData, index) => {
 			const active = this.tabGroups.main === String(index);
+			const { name, enabled } = tabData;
+			const cssClass = [];
+			if (enabled) cssClass.push("enabled");
+			if (active) cssClass.push("active");
 			tabs[index] = {
 				id: index,
 				group: "main",
-				label: tabData.name,
+				label: name,
 				active,
-				cssClass: active ? "active" : "",
+				cssClass: cssClass.join(" "),
 				data: tabData
 			};
 			return tabs;
@@ -83,11 +87,11 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 	static markUsers(event, target) {
 		const checked = !target.classList.contains("checked");
 		target.classList.toggle("checked", checked);
-		for (const element of target.closest(".form-group").querySelectorAll(".karma-checkbox:has(input)")) {
+		for (const element of target.closest(".form-group").querySelectorAll(".user-picker .karma-checkbox:has(input)")) {
 			element.querySelector("input").checked = checked;
 			element.querySelector("label").classList.toggle("checked", checked);
 		}
-		this.element.dispatchEvent(new Event("change"));
+		// this.element.dispatchEvent(new Event("change"));
 	}
 
 	/**

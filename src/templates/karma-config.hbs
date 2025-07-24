@@ -4,7 +4,18 @@
 		{{#with tab.data as |karma|}}
 		<div class="form-group">
 			{{formInput @root.fields.name value=karma.name name=(concat tab.id ".name") localize=true }}
-			{{formGroup @root.fields.enabled value=karma.enabled name=(concat tab.id ".enabled") localize=true }}
+			<div class="karma-checkbox">
+				<input
+					type="checkbox"
+					name="{{@tab.id}}.enabled"
+					id="{{@tab.id}}.enabled"
+					{{checked karma.enabled}}
+					hidden
+				/>
+				<label class="{{checked karma.enabled}}" for="{{@tab.id}}.enabled">
+					{{localize "KARMA.Form.enabled"}}
+				</label>
+			</div>
 			{{formInput @root.fields.id value=karma.id classes="hidden-input" name=(concat tab.id ".id") }}
 		</div>
 		<fieldset>
