@@ -77,7 +77,7 @@
       },
       "Cumulative": {
         "label": "Cumulative Adjustment",
-        "hint": "Increase the adjusment by 5 on following rolls until the average meets the threshold."
+        "hint": "Increase the adjusment by 5 on following rolls until the average passes the threshold."
       },
       "Recurring": {
         "label": "Recurring",
