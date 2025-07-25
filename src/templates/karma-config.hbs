@@ -12,74 +12,12 @@
 					{{checked karma.enabled}}
 					hidden
 				/>
-				<label class="{{checked karma.enabled}}" for="{{@tab.id}}.enabled">
+				<label class="enabled-checkbox {{checked karma.enabled}}" for="{{@tab.id}}.enabled">
 					{{localize "KARMA.Form.enabled"}}
 				</label>
 			</div>
 			{{formInput @root.fields.id value=karma.id classes="hidden-input" name=(concat tab.id ".id") }}
 		</div>
-		<fieldset>
-			<legend>{{localize "KARMA.Karma"}}</legend>
-			{{formGroup @root.fields.dice value=karma.dice name=(concat tab.id ".dice") localize=true}}
-			{{formGroup @root.fields.type value=karma.type name=(concat tab.id ".type") localize=true}}
-
-			{{#if (eq karma.type "fudge")}}
-			{{formInput @root.fields.history value=karma.history classes="hidden-input" name=(concat tab.id ".history") }}
-			{{formGroup @root.fields.inequality value=karma.inequality name=(concat tab.id ".inequality") localize=true}}
-			{{formInput @root.fields.threshold value=karma.threshold classes="hidden-input" name=(concat tab.id ".threshold") }}
-			{{else}}
-			{{formGroup
-				@root.fields.history
-				value=karma.history
-				name=(concat tab.id ".history")
-				hint=(localize (concat "KARMA.Form.History.hint." karma.type) number=karma.history)
-				localize=true
-			}}
-			{{formGroup @root.fields.inequality value=karma.inequality name=(concat tab.id ".inequality") localize=true}}
-			{{formGroup
-				@root.fields.threshold
-				value=karma.threshold
-				classes="lowercase-hint"
-				name=(concat tab.id ".threshold")
-				hint=(localize "KARMA.Form.Threshold.hint" term=(localize (concat "KARMA.Form.Inequality.options." karma.inequality)) number=karma.threshold)
-				max=karma.dice
-				localize=true
-			}}
-			{{/if}}
-
-			{{#if (or (eq karma.type "simple") (eq karma.type "fudge"))}}
-			{{formGroup
-				@root.fields.floor
-				value=karma.floor
-				name=(concat tab.id ".floor")
-				hint=(localize karma.localization.floor.hint leastMost=(karma-leastMost karma.inequality) number=karma.floor)
-				max=karma.dice
-				localize=true
-			}}
-			{{/if}}
-			{{#if (eq karma.type "fudge")}}
-			{{formGroup @root.fields.recurring value=karma.recurring name=(concat tab.id ".recurring") localize=true}}
-			{{/if}}
-
-			{{#if (eq karma.type "average")}}
-			{{formGroup
-				@root.fields.nudge
-				value=karma.nudge
-				classes="lowercase-hint"
-				name=(concat tab.id ".nudge")
-				hint=(localize "KARMA.Form.Nudge.hint" number=karma.nudge threshold=karma.threshold)
-				max=karma.dice
-				localize=true
-			}}
-			{{formGroup
-				@root.fields.cumulative
-				value=karma.cumulative
-				name=(concat tab.id ".cumulative")
-				hint=(localize "KARMA.Form.Cumulative.hint" number=karma.nudge)
-				localize=true
-			}}
-			{{/if}}
-		</fieldset>
 		<fieldset class="user-picker">
 			<legend>{{localize "KARMA.Form.UserPicker.title"}}</legend>
 			<div class="flexcol">
@@ -92,12 +30,12 @@
 							{{checked karma.allGms}}
 							hidden
 						/>
-						<label class="{{checked karma.allGms}}" data-action="markUsers" for="{{@tab.id}}-karmaWho-allGms">
-							{{localize "KARMA.Form.All"}}
+						<label class="{{checked karma.allGms}}" data-action="markUsers" data-users="gm" for="{{@tab.id}}-karmaWho-allGms">
+							{{localize "KARMA.Form.GMS"}}
 						</label>
 					</div>
 					{{#each karma.gms}}
-					<div class="karma-checkbox">
+					<div class="karma-checkbox gm" hidden>
 						<input
 							type="checkbox"
 							name="{{@tab.id}}.gms.{{id}}"
@@ -107,12 +45,8 @@
 							{{checked active}}
 							hidden
 						/>
-						<label class="{{checked active}}" for="{{@tab.id}}-karmaWho-{{id}}">{{name}}</label>
 					</div>
 					{{/each}}
-				</div>
-				<hr>
-				<div class="form-group flexrow">
 					<div class="karma-checkbox">
 						<input
 							type="checkbox"
@@ -121,12 +55,12 @@
 							{{checked karma.allPlayers}}
 							hidden
 						/>
-						<label class="{{checked karma.allPlayers}}" data-action="markUsers" for="{{@tab.id}}-karmaWho-allPlayers">
-							{{localize "KARMA.Form.All"}}
+						<label class="{{checked karma.allPlayers}}" data-action="markUsers" data-users="player" for="{{@tab.id}}-karmaWho-allPlayers">
+							{{localize "KARMA.Form.AllPlayers"}}
 						</label>
 					</div>
 					{{#each karma.players}}
-					<div class="karma-checkbox">
+					<div class="karma-checkbox player">
 						<input
 							type="checkbox"
 							name="{{@tab.id}}.players.{{id}}"
@@ -140,6 +74,55 @@
 					</div>
 					{{/each}}
 				</div>
+			</div>
+		</fieldset>
+		<fieldset>
+			<legend>{{localize "KARMA.Form.Configuration"}}</legend>
+			{{formGroup @root.fields.dice value=karma.dice name=(concat tab.id ".dice") localize=true}}
+			{{formGroup @root.fields.type value=karma.type name=(concat tab.id ".type") localize=true}}
+
+			{{#if (eq karma.type "fudge")}}
+			{{formInput @root.fields.history value=karma.history classes="hidden-input" name=(concat tab.id ".history") }}
+			{{formGroup @root.fields.inequality value=karma.inequality name=(concat tab.id ".inequality") localize=true}}
+			{{formInput @root.fields.threshold value=karma.threshold classes="hidden-input" name=(concat tab.id ".threshold") }}
+			{{else}}
+			{{formGroup @root.fields.history value=karma.history name=(concat tab.id ".history") localize=true }}
+			{{formGroup @root.fields.inequality value=karma.inequality name=(concat tab.id ".inequality") localize=true}}
+			{{formGroup
+				@root.fields.threshold
+				value=karma.threshold
+				name=(concat tab.id ".threshold")
+				max=karma.dice
+				localize=true
+			}}
+			{{/if}}
+
+			{{#if (or (eq karma.type "simple") (eq karma.type "fudge"))}}
+			{{formGroup
+				@root.fields.floor
+				value=karma.floor
+				name=(concat tab.id ".floor")
+				max=karma.dice
+				localize=true
+			}}
+			{{/if}}
+			{{#if (eq karma.type "fudge")}}
+			{{formGroup @root.fields.recurring value=karma.recurring name=(concat tab.id ".recurring") localize=true}}
+			{{/if}}
+
+			{{#if (eq karma.type "average")}}
+			{{formGroup
+				@root.fields.nudge
+				value=karma.nudge
+				name=(concat tab.id ".nudge")
+				max=karma.dice
+				localize=true
+			}}
+			{{formGroup @root.fields.cumulative value=karma.cumulative name=(concat tab.id ".cumulative") localize=true }}
+			{{/if}}
+			<div class="form-group">
+				<label>{{localize "KARMA.Form.Outcome"}}</label>
+				<p class="hint">{{karma.example}}</p>
 			</div>
 		</fieldset>
 		{{/with}}

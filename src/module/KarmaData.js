@@ -21,12 +21,7 @@ export class KarmaData extends foundry.abstract.DataModel {
 			inequality: new fields.StringField({
 				required: true,
 				initial: "≤",
-				choices: {
-					"≤": "KARMA.Form.Inequality.options.≤",
-					"<": "KARMA.Form.Inequality.options.<",
-					"≥": "KARMA.Form.Inequality.options.≥",
-					">": "KARMA.Form.Inequality.options.>"
-				},
+				choices: Object.fromEntries(["≤", "<", "≥", ">"].map((value) => [value, value])),
 				label: "KARMA.Form.Inequality.label"
 			}),
 			history: requiredInt({ initial: 2, min: 2, max: 100, label: "KARMA.Form.History.label" }),
@@ -37,7 +32,7 @@ export class KarmaData extends foundry.abstract.DataModel {
 			floor: requiredInt({ initial: 13, label: "KARMA.Form.Floor.label" }),
 			// Exclusive to Average Karma
 			nudge: requiredInt({initial: 5, label: "KARMA.Form.Nudge.label" }),
-			cumulative: new fields.BooleanField({ label: "KARMA.Form.Cumulative.label", hint: "KARMA.Form.Cumulative.hint" }),
+			cumulative: new fields.BooleanField({ label: "KARMA.Form.Cumulative.label" }),
 			// User Configuration
 			allGms: new fields.BooleanField({ initial: true }),
 			allPlayers: new fields.BooleanField({ initial: true }),

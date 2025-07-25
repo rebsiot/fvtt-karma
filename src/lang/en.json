@@ -27,11 +27,14 @@
       "UserPicker": {
         "title": "Who should be affected by karma?"
       },
-      "All": "All",
+      "Configuration": "Karma Configuration",
+      "AllPlayers": "All Players",
+      "GMS": "Gamemasters",
       "Dice": "Dice",
       "AddNewKarma": "Add New Configuration",
       "NewKarma": "New Karma",
       "DeleteKarma": "Delete Karma",
+      "Outcome": "Outcome",
       "least": "at least",
       "most": "at most",
 
@@ -49,39 +52,38 @@
         "label": "Comparison",
         "hint": "Trigger for the karma, based on the given inequality.",
         "options": {
-          "≤": "Less than or equal to",
-          "<": "Less than",
-          "≥": "Greater than or equal to",
-          ">": "Greater than"
+          "≤": "less than or equal to",
+          "<": "less than",
+          "≥": "greater than or equal to",
+          ">": "greater than"
         }
       },
       "History": {
         "label": "History",
         "hint": {
-          "simple": "If the last {number} rolls are...",
-          "average": "If the average of the last {number} rolls is..."
+          "simple": "If the last {number} rolls are",
+          "average": "If the average of the last {number} rolls is"
         }
       },
       "Threshold": {
         "label": "Threshold",
-        "hint": "...{term} {number}, then..."
+        "hint": "{term} {number}, then"
       },
       "Floor": {
         "label": "Target",
-        "hint": "...the next die roll will be {leastMost} {number}.",
-        "hintFudge": "The next die roll will be {leastMost} {number}"
+        "hint": "the next die roll will be {leastMost} {number}."
       },
       "Nudge": {
         "label": "Adjustment",
-        "hint": "...the next die roll will be adjusted by {number}."
+        "hint": "the next die roll will be adjusted by {number}."
       },
       "Cumulative": {
         "label": "Cumulative Adjustment",
-        "hint": "Increase the adjusment by 5 on following rolls until the average passes the threshold."
+        "hint": "Increase the adjusment by {number} on following rolls until the average passes the threshold."
       },
       "Recurring": {
         "label": "Recurring",
-        "hint": "This fudge should not deactivate once it gets triggered."
+        "hint": "This fudge won't deactivate once it gets triggered."
       }
     }
   }

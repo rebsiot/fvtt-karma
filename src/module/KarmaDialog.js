@@ -73,11 +73,7 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 	_prepareContext() {
 		this.karma.forEach((k) => {
 			this.getUsers(k);
-			k.localization = {
-				floor: {
-					hint: k.type === "fudge" ? "KARMA.Form.Floor.hintFudge" : "KARMA.Form.Floor.hint"
-				}
-			};
+			k.example = this.getExample(k);
 		});
 		return {
 			tabs: this.#prepareTabs(),
@@ -94,9 +90,10 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 	static markUsers(event, target) {
 		const checked = !target.classList.contains("checked");
 		target.classList.toggle("checked", checked);
-		for (const element of target.closest(".form-group").querySelectorAll(".user-picker .karma-checkbox:has(input)")) {
+		const users = target.dataset.users;
+		for (const element of target.closest(".form-group").querySelectorAll(`.user-picker .karma-checkbox.${users}:has(input)`)) {
 			element.querySelector("input").checked = checked;
-			element.querySelector("label").classList.toggle("checked", checked);
+			element.querySelector("label")?.classList.toggle("checked", checked);
 		}
 	}
 
@@ -123,6 +120,28 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 					});
 				}
 			});
+	}
+
+	getExample(karma) {
+		let example = "";
+		const leastMost = game.i18n.localize(`KARMA.Form.${["≤", "<"].includes(karma.inequality) ? "least" : "most"}`);
+		const term = game.i18n.localize(`KARMA.Form.Inequality.options.${karma.inequality}`);
+		const threshold = game.i18n.format("KARMA.Form.Threshold.hint", { term, number: karma.threshold });
+		const target = game.i18n.format("KARMA.Form.Floor.hint", { leastMost, number: karma.floor });
+		if (karma.type === "simple") {
+			const history = game.i18n.format("KARMA.Form.History.hint.simple", { number: karma.history });
+			example = `${history} ${threshold} ${target}`;
+		} else if (karma.type === "average") {
+			const history = game.i18n.format("KARMA.Form.History.hint.average", { number: karma.history });
+			let adjustment = game.i18n.format("KARMA.Form.Nudge.hint", { number: karma.nudge, threshold: karma.threshold });
+			if (karma.cumulative) {
+				adjustment = `${adjustment.slice(0, -1)}, ${karma.nudge * 2}, ${karma.nudge * 3}...`;
+			}
+			example = `${history} ${threshold} ${adjustment}`;
+		} else if (karma.type === "fudge") {
+			example = target.capitalize();
+		}
+		return example;
 	}
 
 	_onRender(context, options) {

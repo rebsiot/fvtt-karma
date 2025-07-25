@@ -60,14 +60,6 @@
     }
   }
 
-  .form-group {
-    &.lowercase-hint {
-      p.hint {
-        text-transform: lowercase;
-      }
-    }
-  }
-
   .user-picker {
     .flexrow {
       gap: 0;
@@ -86,6 +78,10 @@
       border: 1px solid transparent;
       border-radius: 3px;
       cursor: pointer;
+
+      &.enabled-checkbox {
+        padding: 0 4rem;
+      }
 
       &.checked {
         background: var(--color-warm-1);
