@@ -45,7 +45,7 @@
         "fudge": "Fudge"
       },
       "Faces": {
-        "label": "Die Faces",
+        "label": "Dice",
         "hint": "The number of faces of the die."
       },
       "Inequality": {

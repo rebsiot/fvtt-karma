@@ -2,6 +2,11 @@ const { fields } = foundry.data;
 
 export class KarmaData extends foundry.abstract.DataModel {
 	static defineSchema() {
+
+		const maxDie = Math.max(
+			...Object.keys(CONFIG.Dice.fulfillment.dice)
+				.map((key) => Number(key.replace(/^d/, "")))
+		);
 		return {
 			id: new fields.DocumentIdField({ nullable: false }),
 			enabled: new fields.BooleanField({ label: "KARMA.Form.enabled" }),
@@ -17,7 +22,7 @@ export class KarmaData extends foundry.abstract.DataModel {
 				},
 				label: "KARMA.Form.Type.label"
 			}),
-			dice: requiredInt({ initial: 20, min: 2, max: 100, label: "KARMA.Form.Faces.label" }),
+			dice: requiredInt({ initial: 20, min: 2, max: maxDie, label: "KARMA.Form.Faces.label" }),
 			inequality: new fields.StringField({
 				required: true,
 				initial: "≤",

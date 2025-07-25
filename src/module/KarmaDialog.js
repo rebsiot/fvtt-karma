@@ -8,6 +8,7 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			addKarma: KarmaApp.addKarma,
 			deleteKarma: KarmaApp.deleteKarma,
 			markUsers: KarmaApp.markUsers,
+			selectDice: KarmaApp.selectDice
 		},
 		form: {
 			handler: KarmaApp.#onSubmit,
@@ -76,6 +77,12 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			k.example = this.getExample(k);
 		});
 		return {
+			diceList: Object.fromEntries(
+				Object.entries(CONFIG.Dice.fulfillment.dice).map(([key, value]) => {
+					const number = key.replace(/^d/, ""); // Remove the 'd'
+					return [value.label, Number(number)];
+				})
+			),
 			tabs: this.#prepareTabs(),
 			verticalTabs: true,
 			fields: KarmaData.schema.fields,
@@ -95,6 +102,13 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			element.querySelector("input").checked = checked;
 			element.querySelector("label")?.classList.toggle("checked", checked);
 		}
+	}
+
+	static selectDice(event, target) {
+		const checked = !target.classList.contains("checked");
+		if (!checked) return;
+		const dice = target.dataset.dice;
+		target.closest(".form-group").querySelector("range-picker").value = dice;
 	}
 
 	/**

@@ -78,16 +78,28 @@
 		</fieldset>
 		<fieldset>
 			<legend>{{localize "KARMA.Form.Configuration"}}</legend>
-			{{formGroup @root.fields.dice value=karma.dice name=(concat tab.id ".dice") localize=true}}
+			<div class="form-group dice-buttons">
+				<label>{{localize "KARMA.Form.Faces.label"}}</label>
+				{{formInput @root.fields.dice value=karma.dice classes="hidden-input" name=(concat tab.id ".dice") }}
+				<div class="flexrow">
+					{{#each @root.diceList as |dice label|}}
+					<div class="karma-checkbox">
+						<label class="{{checked (eq karma.dice dice)}}" data-action="selectDice" data-dice="{{dice}}">
+							{{label}}
+						</label>
+					</div>
+					{{/each}}
+				</div>
+			</div>
 			{{formGroup @root.fields.type value=karma.type name=(concat tab.id ".type") localize=true}}
 
 			{{#if (eq karma.type "fudge")}}
-			{{formInput @root.fields.history value=karma.history classes="hidden-input" name=(concat tab.id ".history") }}
 			{{formGroup @root.fields.inequality value=karma.inequality name=(concat tab.id ".inequality") localize=true}}
+			{{formInput @root.fields.history value=karma.history classes="hidden-input" name=(concat tab.id ".history") }}
 			{{formInput @root.fields.threshold value=karma.threshold classes="hidden-input" name=(concat tab.id ".threshold") }}
 			{{else}}
-			{{formGroup @root.fields.history value=karma.history name=(concat tab.id ".history") localize=true }}
 			{{formGroup @root.fields.inequality value=karma.inequality name=(concat tab.id ".inequality") localize=true}}
+			{{formGroup @root.fields.history value=karma.history name=(concat tab.id ".history") localize=true }}
 			{{formGroup
 				@root.fields.threshold
 				value=karma.threshold

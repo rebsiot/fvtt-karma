@@ -54,9 +54,17 @@
     display: none;
   }
 
-  .form-fields {
-    &:has(input[type="checkbox"]) {
-      flex: 0;
+  .form-group {
+    &.dice-buttons {
+      > * {
+        flex-basis: 100%;
+      }
+    }
+
+    .form-fields {
+      &:has(input[type="checkbox"]) {
+        flex: 0;
+      }
     }
   }
 
@@ -69,6 +77,10 @@
   .karma-checkbox {
     display: flex;
     flex: 0 0 auto;
+
+    &:has([data-action="selectDice"]) {
+      flex: 1;
+    }
 
     label {
       height: var(--input-height);

@@ -102,10 +102,6 @@ Hooks.once("init", () => {
 		restricted: true,
 	});
 
-	Handlebars.registerHelper("karma-leastMost", function (inequality) {
-		return game.i18n.localize(`KARMA.Form.${["≤", "<"].includes(inequality) ? "least" : "most"}`);
-	});
-
 	CONFIG.queries["karma-disable-fudge"] = async ({ id }) => {
 		const settings = foundry.utils.deepClone(game.settings.get("karma", "configs"));
 		settings.find((k) => k.id === id).enabled = false;
