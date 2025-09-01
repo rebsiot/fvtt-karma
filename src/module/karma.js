@@ -4,6 +4,26 @@ import { KarmaApp } from "./KarmaDialog.js";
 
 Hooks.once("init", () => {
 	libWrapper.register("karma", "CONFIG.Dice.termTypes.DiceTerm.prototype.roll", wrapDiceTermRoll, "MIXED");
+
+	// Hero Point bonus settings
+	game.settings.register("karma", "heroPointBonusEnabled", {
+		name: "KARMA.Settings.heroPointBonusEnabled.label",
+		hint: "KARMA.Settings.heroPointBonusEnabled.hint",
+		scope: "world",
+		config: true,
+		type: Boolean,
+		default: false,
+	});
+
+	game.settings.register("karma", "heroPointBonusAmount", {
+		name: "KARMA.Settings.heroPointBonusAmount.label",
+		hint: "KARMA.Settings.heroPointBonusAmount.hint",
+		scope: "world",
+		config: true,
+		type: Number,
+		default: 1,
+		range: { min: 0, max: 20, step: 1 },
+	});
 	game.settings.registerMenu("karma", "KarmaDialog", {
 		name: "KARMA.Karma",
 		label: "KARMA.Settings.KarmaDialog.label",
@@ -249,5 +269,40 @@ async function wrapDiceTermRoll(wrapped, options) {
 			this.results[this.results.length - 1] = roll;
 		}
 	}
+
+	// Apply Hero Point bonus (heuristic detection)
+	if (!options?.maximize && !options?.minimize) {
+		try {
+			const enabled = game.settings.get("karma", "heroPointBonusEnabled");
+			const bonus = Number(game.settings.get("karma", "heroPointBonusAmount")) || 0;
+			if (enabled && bonus > 0 && this.faces === 20 && isHeroPointRoll(options, this)) {
+				const oldRoll = roll.result;
+				roll.result = Math.clamp(roll.result + bonus, 1, this.faces);
+				const message = `Hero Point bonus: +${bonus} (${oldRoll}→${roll.result})`;
+				if (this.options.karma) this.options.karma.push(message);
+				else this.options.karma = [message];
+				this.results[this.results.length - 1] = roll;
+			}
+		} catch (e) {
+			// Fail-safe: never break the core roll
+		}
+	}
 	return roll;
+}
+
+// Best-effort detection of a hero point reroll across systems
+function isHeroPointRoll(options, term) {
+	const opt = options ?? term?.options ?? {};
+	const flavor = String(opt.flavor ?? "").toLowerCase();
+	// Common clues across systems and modules
+	if (opt.heroPoint === true || opt.isHeroPoint === true) return true;
+	if (opt.rerollType === "heroPoint" || opt.rerollReason === "heroPoint") return true;
+	if (opt.isReroll && opt.heroPoint === true) return true;
+	if (flavor.includes("hero point")) return true;
+	// PF2e-specific flags (best guess)
+	try {
+		if (getProperty?.(opt, "flags.pf2e.reroll.heroPoint") === true) return true;
+		if (getProperty?.(opt, "flags.pf2e.heroPoint") === true) return true;
+	} catch (_) {}
+	return false;
 }
