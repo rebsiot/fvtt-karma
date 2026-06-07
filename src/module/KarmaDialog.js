@@ -1,6 +1,7 @@
 import { KarmaData } from "./KarmaData.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
 export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 	static DEFAULT_OPTIONS = {
 		id: "karma-config",
@@ -10,12 +11,12 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			markUsers: KarmaApp.markUsers,
 			selectDice: KarmaApp.selectDice
 		},
-form: {
-	handler: KarmaApp.onSubmitForm,
-	closeOnSubmit: false,
-	submitOnChange: true,
-	submitOnClose: true,
-},
+		form: {
+			handler: KarmaApp.onSubmitForm,
+			closeOnSubmit: false,
+			submitOnChange: true,
+			submitOnClose: true,
+		},
 		position: {
 			width: 650
 		},
@@ -27,7 +28,7 @@ form: {
 		},
 	};
 
-static PARTS = {
+	static PARTS = {
 		tabs: { template: "templates/generic/tab-navigation.hbs" },
 		form: { template: "modules/karma/templates/karma-config.hbs" },
 		buttons: { template: "templates/generic/form-footer.hbs" }
@@ -48,8 +49,7 @@ static PARTS = {
 		return this._karma;
 	}
 
-
-set karma(value) {
+	set karma(value) {
 		this._karma = value;
 		this.#rebuildTabGroups();
 	}
@@ -73,9 +73,11 @@ set karma(value) {
 			const active = this.tabGroups.main === String(index);
 			const { name, enabled, recurring, type } = tabData;
 			const cssClass = [];
+
 			if (enabled) cssClass.push("enabled");
 			if (active) cssClass.push("active");
 			if (type === "fudge" && recurring !== false) cssClass.push("recurring");
+
 			tabs[index] = {
 				id: index,
 				group: "main",
@@ -84,6 +86,7 @@ set karma(value) {
 				cssClass: cssClass.join(" "),
 				data: tabData
 			};
+
 			return tabs;
 		}, {});
 	}
@@ -93,10 +96,11 @@ set karma(value) {
 			this.getUsers(k);
 			k.example = this.getExample(k);
 		});
+
 		return {
 			diceList: Object.fromEntries(
 				Object.entries(CONFIG.Dice.fulfillment.dice).map(([key, value]) => {
-					const number = key.replace(/^d/, ""); // Remove the 'd'
+					const number = key.replace(/^d/, "");
 					return [value.label, Number(number)];
 				})
 			),
@@ -111,11 +115,11 @@ set karma(value) {
 		};
 	}
 
-	static markUsers(event, target) {
+	static markUsers(_event, target) {
 		const checked = !target.classList.contains("checked");
 		target.classList.toggle("checked", checked);
 		const users = target.dataset.users;
-	const formGroup = target.closest(".form-group");
+		const formGroup = target.closest(".form-group");
 		if (!formGroup) return;
 
 		for (const element of formGroup.querySelectorAll(`.user-picker .karma-checkbox.${users}:has(input)`)) {
@@ -125,33 +129,32 @@ set karma(value) {
 		}
 	}
 
-	static selectDice(event, target) {
+	static selectDice(_event, target) {
 		const checked = !target.classList.contains("checked");
 		if (!checked) return;
+
 		const dice = target.dataset.dice;
-   	const picker = target.closest(".form-group")?.querySelector("range-picker");
+		const picker = target.closest(".form-group")?.querySelector("range-picker");
 		if (picker) picker.value = dice;
 	}
 
-	/**
-	 *Return an array of all users (map of id and name), defaulting to ones currently active
-	 */
 	getUsers(karma, activeOnly = false) {
 		karma.gms = [];
 		karma.players = [];
+
 		game.users
-			.filter(({ active }) => (!activeOnly || active))
+			.filter(({ active }) => !activeOnly || active)
 			.forEach(({ id, name, isGM }) => {
 				if (isGM) {
 					karma.gms.push({
 						id,
-						name: name,
+						name,
 						active: Boolean(karma.users[id]) || karma.allGms
 					});
 				} else {
 					karma.players.push({
 						id,
-						name: name,
+						name,
 						active: Boolean(karma.users[id]) || karma.allPlayers
 					});
 				}
@@ -164,19 +167,26 @@ set karma(value) {
 		const term = game.i18n.localize(`KARMA.Form.Inequality.options.${karma.inequality}`);
 		const threshold = game.i18n.format("KARMA.Form.Threshold.hint", { term, number: karma.threshold });
 		const target = game.i18n.format("KARMA.Form.Floor.hint", { leastMost, number: karma.floor });
+
 		if (karma.type === "simple") {
 			const history = game.i18n.format("KARMA.Form.History.hint.simple", { number: karma.history });
 			example = `${history} ${threshold} ${target}`;
 		} else if (karma.type === "average") {
 			const history = game.i18n.format("KARMA.Form.History.hint.average", { number: karma.history });
-			let adjustment = game.i18n.format("KARMA.Form.Nudge.hint", { number: karma.nudge, threshold: karma.threshold });
+			let adjustment = game.i18n.format("KARMA.Form.Nudge.hint", {
+				number: karma.nudge,
+				threshold: karma.threshold
+			});
+
 			if (karma.cumulative) {
 				adjustment = `${adjustment.slice(0, -1)}, ${karma.nudge * 2}, ${karma.nudge * 3}...`;
 			}
+
 			example = `${history} ${threshold} ${adjustment}`;
-    } else if (karma.type === "fudge") {
-  	example = target.charAt(0).toUpperCase() + target.slice(1);
-    }
+		} else if (karma.type === "fudge") {
+			example = target.charAt(0).toUpperCase() + target.slice(1);
+		}
+
 		return example;
 	}
 
@@ -203,20 +213,23 @@ set karma(value) {
 
 	static async addKarma(event) {
 		event.preventDefault();
+
 		this.tabGroups.main = String(this.karma.length);
 		const name = game.i18n.localize("KARMA.Form.NewKarma");
+
 		this.karma.push({
 			...game.settings.settings.get("karma.configs").default[0],
 			name,
 			id: foundry.utils.randomID(16)
 		});
+
 		this.#rebuildTabGroups();
 		this.render();
 	}
 
 	static async deleteKarma(event) {
 		event.preventDefault();
-	if (!this.karma.length) return;
+		if (!this.karma.length) return;
 
 		this.karma.splice(Number(this.tabGroups.main), 1);
 		this.tabGroups.main = String(Math.max(0, Number(this.tabGroups.main) - 1));
@@ -225,7 +238,7 @@ set karma(value) {
 		this.render();
 	}
 
-static async onSubmitForm(event, _form, formData) {
+	static async onSubmitForm(event, _form, formData) {
 		const expandForm = foundry.utils.expandObject(formData.object);
 		const config = [];
 
