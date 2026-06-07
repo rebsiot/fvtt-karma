@@ -10,12 +10,12 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			markUsers: KarmaApp.markUsers,
 			selectDice: KarmaApp.selectDice
 		},
-		form: {
-			handler: KarmaApp.#onSubmit,
-			closeOnSubmit: false,
-			submitOnChange: true,
-			submitOnClose: true,
-		},
+form: {
+	handler: KarmaApp.onSubmitForm,
+	closeOnSubmit: false,
+	submitOnChange: true,
+	submitOnClose: true,
+},
 		position: {
 			width: 650
 		},
@@ -27,29 +27,46 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		},
 	};
 
-	static PARTS = {
+static PARTS = {
 		tabs: { template: "templates/generic/tab-navigation.hbs" },
 		form: { template: "modules/karma/templates/karma-config.hbs" },
 		buttons: { template: "templates/generic/form-footer.hbs" }
 	};
 
-	_karma;
+	_karma = null;
+	tabGroups = { main: "0" };
+
+	constructor(options = {}) {
+		super(options);
+		this.#rebuildTabGroups();
+	}
 
 	get karma() {
-		return this._karma ??= foundry.utils.deepClone(game.settings.get("karma", "configs"));
+		if (!this._karma) {
+			this._karma = foundry.utils.deepClone(game.settings.get("karma", "configs"));
+		}
+		return this._karma;
 	}
 
-	set karma(value) {
+
+set karma(value) {
 		this._karma = value;
+		this.#rebuildTabGroups();
 	}
 
-	tabGroups = {
-		main: "0",
-		...this.karma.reduce((types, _, index) => {
-			types[index] = "basics";
-			return types;
-		}, {})
-	};
+	#rebuildTabGroups() {
+		const currentMain = this.tabGroups?.main ?? "0";
+		const rebuilt = { main: currentMain };
+
+		for (let i = 0; i < this.karma.length; i += 1) {
+			rebuilt[i] = this.tabGroups?.[i] ?? "basics";
+		}
+
+		if (this.karma.length === 0) rebuilt.main = "0";
+		else if (Number(rebuilt.main) >= this.karma.length) rebuilt.main = String(this.karma.length - 1);
+
+		this.tabGroups = rebuilt;
+	}
 
 	#prepareTabs() {
 		return this.karma.reduce((tabs, tabData, index) => {
@@ -71,7 +88,7 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		}, {});
 	}
 
-	_prepareContext() {
+	async _prepareContext() {
 		this.karma.forEach((k) => {
 			this.getUsers(k);
 			k.example = this.getExample(k);
@@ -98,8 +115,12 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		const checked = !target.classList.contains("checked");
 		target.classList.toggle("checked", checked);
 		const users = target.dataset.users;
-		for (const element of target.closest(".form-group").querySelectorAll(`.user-picker .karma-checkbox.${users}:has(input)`)) {
-			element.querySelector("input").checked = checked;
+	const formGroup = target.closest(".form-group");
+		if (!formGroup) return;
+
+		for (const element of formGroup.querySelectorAll(`.user-picker .karma-checkbox.${users}:has(input)`)) {
+			const input = element.querySelector("input");
+			if (input) input.checked = checked;
 			element.querySelector("label")?.classList.toggle("checked", checked);
 		}
 	}
@@ -108,7 +129,8 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 		const checked = !target.classList.contains("checked");
 		if (!checked) return;
 		const dice = target.dataset.dice;
-		target.closest(".form-group").querySelector("range-picker").value = dice;
+   	const picker = target.closest(".form-group")?.querySelector("range-picker");
+		if (picker) picker.value = dice;
 	}
 
 	/**
@@ -152,24 +174,31 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 				adjustment = `${adjustment.slice(0, -1)}, ${karma.nudge * 2}, ${karma.nudge * 3}...`;
 			}
 			example = `${history} ${threshold} ${adjustment}`;
-		} else if (karma.type === "fudge") {
-			example = target.capitalize();
-		}
+    } else if (karma.type === "fudge") {
+  	example = target.charAt(0).toUpperCase() + target.slice(1);
+    }
 		return example;
 	}
 
 	_onRender(context, options) {
+		super._onRender?.(context, options);
+
+		const tabs = this.element?.querySelector?.(".sheet-tabs");
+		if (!tabs) return;
+		if (tabs.querySelector('[data-action="addKarma"]')) return;
+
 		const a = document.createElement("a");
 		a.dataset.action = "addKarma";
 		a.dataset.tab = "";
+
 		const span = document.createElement("span");
 		const i = document.createElement("i");
 		i.className = "far fa-plus";
 		span.append(i);
-		span.innerText = game.i18n.localize("KARMA.Form.AddNewKarma");
-		a.append(span);
+		span.append(document.createTextNode(game.i18n.localize("KARMA.Form.AddNewKarma")));
 
-		this.element.querySelector(".sheet-tabs").append(a);
+		a.append(span);
+		tabs.append(a);
 	}
 
 	static async addKarma(event) {
@@ -181,34 +210,51 @@ export class KarmaApp extends HandlebarsApplicationMixin(ApplicationV2) {
 			name,
 			id: foundry.utils.randomID(16)
 		});
+		this.#rebuildTabGroups();
 		this.render();
 	}
 
 	static async deleteKarma(event) {
 		event.preventDefault();
+	if (!this.karma.length) return;
+
 		this.karma.splice(Number(this.tabGroups.main), 1);
-		this.tabGroups.main = String(Number(this.tabGroups.main) - 1);
+		this.tabGroups.main = String(Math.max(0, Number(this.tabGroups.main) - 1));
+
+		this.#rebuildTabGroups();
 		this.render();
 	}
 
-	static async #onSubmit(event, form, formData) {
+static async onSubmitForm(event, _form, formData) {
 		const expandForm = foundry.utils.expandObject(formData.object);
 		const config = [];
-		Object.entries(expandForm).forEach(([id, karma]) => {
+
+		for (const [, karma] of Object.entries(expandForm)) {
 			const gms = Object.entries(karma?.gms ?? {});
 			const players = Object.entries(karma?.players ?? {});
-			karma.allGms = gms.every(([id, bool]) => bool);
-			karma.allPlayers = players.every(([id, bool]) => bool);
-			const users = Object.fromEntries([...gms, ...players]);
 
-			const { floor, nudge, cumulative } = game.settings.settings.get("karma.configs").default[0];
-			config.push({ floor, nudge, cumulative, users, ...karma });
-		});
+			karma.allGms = gms.every(([, bool]) => bool);
+			karma.allPlayers = players.every(([, bool]) => bool);
+
+			const users = Object.fromEntries([...gms, ...players]);
+			const defaults = game.settings.settings.get("karma.configs").default[0];
+
+			config.push({
+				floor: defaults.floor,
+				nudge: defaults.nudge,
+				cumulative: defaults.cumulative,
+				users,
+				...karma
+			});
+		}
+
 		this.karma = config;
 
 		if (event.type === "submit") {
 			await game.settings.set("karma", "configs", this.karma);
-			this.close();
-		} else this.render();
+			await this.close();
+		} else {
+			this.render();
+		}
 	}
 }
