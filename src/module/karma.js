@@ -33,24 +33,6 @@ Hooks.once("init", () => {
 		restricted: true,
 	});
 
-	// TODO remove on V14
-	// Used to convert old 1.0 settings to 2.0
-	game.settings.register("karma", "resetSettings", {
-		scope: "world",
-		config: false,
-		type: Boolean,
-		default: false
-	});
-
-	// TODO remove on V14
-	if (!game.settings.get("karma", "resetSettings")) {
-		// V1 setting, not used anymore. Kept to avoid issues.
-		game.settings.register("karma", "config", {
-			scope: "world",
-			config: false,
-			type: KarmaData
-		});
-	}
 
 	const { ArrayField, EmbeddedDataField } = foundry.data.fields;
 	game.settings.register("karma", "configs", {
@@ -102,7 +84,7 @@ Hooks.once("init", () => {
 		config: true,
 		type: Boolean,
 		default: true,
-		onChange: async () => await ui.controls.render({ reset: true }),
+		onChange: async () => ui.controls.render({ reset: true }),
 	});
 
 	game.settings.register("karma", "hideModule", {
@@ -124,61 +106,70 @@ Hooks.once("init", () => {
 
 	CONFIG.queries["karma-disable-fudge"] = async ({ id }) => {
 		const settings = foundry.utils.deepClone(game.settings.get("karma", "configs"));
-		settings.find((k) => k.id === id).enabled = false;
+		const entry = settings.find((k) => k.id === id);
+		if (!entry) return;
+		entry.enabled = false;
 		await game.settings.set("karma", "configs", settings);
 	};
 });
 
 Hooks.once("ready", async () => {
-	// TODO remove on V14
-	if (!game.settings.get("karma", "resetSettings")) {
-		const config = game.settings.get("karma", "config");
-		const defaultValue = game.settings.settings.get("karma.configs").default[0];
-		await game.settings.set("karma", "configs", [{ ...defaultValue, ...config }]);
-		for (const user of game.users) {
-			let flag = foundry.utils.deepClone(user.getFlag("karma", "stats"));
-			if (!flag) continue;
-			flag = { [config[0].id]: { history: flag.history, cumulative: flag.cumulative } };
-			await user.unsetFlag("karma", "stats");
-			await user.setFlag("karma", "stats", flag);
-		}
-		await game.settings.set("karma", "resetSettings", true);
-	}
 	if (!game.user.isGM && game.settings.get("karma", "hideModule")) {
 		const karma = game.modules.get("karma");
-		karma._source.title = "libDiceStats";
-		karma._source.description = "";
-		karma._source.url = "";
-	}
+		if (karma?._source) {
+			karma._source.title = "libDiceStats";
+			karma._source.description = "";
+			karma._source.url = "";
+		}
 });
 
 Hooks.on("getSceneControlButtons", (controls) => {
 	if (!game.user.isGM || !game.settings.get("karma", "controlsButton")) return;
-	controls.tokens.tools.karma = {
-		name: "karma",
-		title: "KARMA.Karma",
-		icon: "fas fa-praying-hands",
-		onChange: () => new KarmaApp().render(true),
-		button: true,
-	};
+
+	const tokenControls = controls.tokens ?? controls.find?.((c) => c.name === "token");
+	const tools = tokenControls?.tools;
+	if (!tools) return;
+
+	if (Array.isArray(tools)) {
+		tools.push({
+			name: "karma",
+			title: "KARMA.Karma",
+			icon: "fas fa-praying-hands",
+			onClick: () => new KarmaApp().render(true),
+			button: true,
+		});
+	} else {
+		tools.karma = {
+			name: "karma",
+			title: "KARMA.Karma",
+			icon: "fas fa-praying-hands",
+			onClick: () => new KarmaApp().render(true),
+			button: true,
+		};
+	}
 });
 
 Hooks.on("renderChatMessage", (message, html, data) => {
 	if (!game.user.isGM || !message.rolls?.length || !game.settings.get("karma", "showChatMessageIcon")) return;
+
 	const terms = message.rolls.filter((r) => r.terms.some((t) => t.options?.karma));
-	if (terms?.length) {
-		const karma = terms.flatMap((entry) => entry.terms)
-			.map((term) => term.options.karma)
-			.filterJoin("<br>");
-		const button = $(
-			`<span
-			data-tooltip="${karma}"
-			data-tooltip-direction="LEFT">
-				<i class="fas fa-praying-hands"></i>
-			</span>`
-		);
-		html.find(".message-metadata").append(button);
-	}
+	if (!terms.length) return;
+
+	const karma = terms
+		.flatMap((entry) => entry.terms)
+		.map((term) => term.options?.karma)
+		.filter(Boolean)
+		.flat()
+		.join("<br>");
+
+	const metadata = html[0]?.querySelector?.(".message-metadata") ?? html.find?.(".message-metadata")?.[0];
+	if (!metadata) return;
+
+	const span = document.createElement("span");
+	span.dataset.tooltip = karma;
+	span.dataset.tooltipDirection = "LEFT";
+	span.innerHTML = '<i class="fas fa-praying-hands"></i>';
+	metadata.append(span);
 });
 
 function clampHistory(history, karma) {
@@ -255,8 +246,9 @@ async function wrapDiceTermRoll(wrapped, options) {
 						roll.result = Math.ceil(CONFIG.Dice.randomUniform() * this.faces);
 					}
 
-					if (!k.recurring) {
-						await game.users.activeGM.query("karma-disable-fudge", { id: k.id });
+				if (!k.recurring) {
+						const gm = game.users.activeGM ?? game.users.find((u) => u.isGM && u.active);
+						await gm?.query?.("karma-disable-fudge", { id: k.id });
 					}
 				}
 			}
@@ -268,6 +260,7 @@ async function wrapDiceTermRoll(wrapped, options) {
 			game.user.setFlag("karma", "stats", userKarma);
 			this.results[this.results.length - 1] = roll;
 		}
+    
 	}
 
 	// Apply Hero Point bonus (heuristic detection)
@@ -290,19 +283,19 @@ async function wrapDiceTermRoll(wrapped, options) {
 	return roll;
 }
 
-// Best-effort detection of a hero point reroll across systems
 function isHeroPointRoll(options, term) {
 	const opt = options ?? term?.options ?? {};
 	const flavor = String(opt.flavor ?? "").toLowerCase();
-	// Common clues across systems and modules
+
 	if (opt.heroPoint === true || opt.isHeroPoint === true) return true;
 	if (opt.rerollType === "heroPoint" || opt.rerollReason === "heroPoint") return true;
 	if (opt.isReroll && opt.heroPoint === true) return true;
 	if (flavor.includes("hero point")) return true;
-	// PF2e-specific flags (best guess)
+
 	try {
-		if (getProperty?.(opt, "flags.pf2e.reroll.heroPoint") === true) return true;
-		if (getProperty?.(opt, "flags.pf2e.heroPoint") === true) return true;
-	} catch (_) {}
+		if (foundry.utils.getProperty(opt, "flags.pf2e.reroll.heroPoint") === true) return true;
+		if (foundry.utils.getProperty(opt, "flags.pf2e.heroPoint") === true) return true;
+	} catch (_e) {}
+
 	return false;
 }
