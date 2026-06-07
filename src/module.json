@@ -1,6 +1,6 @@
 {
-  "id": "karma",
-  "title": "Karma",
+  "id": "karma-dice-v2",
+  "title": "Karma Dice v2",
   "description": "A Foundry VTT module that adjusts dice results using configurable karma rules and optional hero point bonuses.  This is a fork from Matthew Clemente and is not meant for general release.",
   "version": "2.0.0",
   "authors": [
@@ -13,9 +13,9 @@
     "verified": "14.359"
   },
   "esmodules": [
-    "scripts/karma.js",
-    "scripts/KarmaData.js",
-    "scripts/KarmaDialog.js"
+    "module/karma.js",
+    "module/KarmaData.js",
+    "module/KarmaDialog.js"
   ],
   "styles": [
     "styles/karma.css"
